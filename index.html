@@ -1139,6 +1139,72 @@ const GM_CVP_CHART = [
 ];
 
 /* ============================================================
+   الوحدة الخامسة — التكاليف المعيارية وتحليل الانحرافات
+   ============================================================ */
+
+/* ---- 16) انحراف السعر أم الكفاءة؟ ---- */
+/* k: p = انحراف سعر، e = انحراف كفاءة */
+const GM_VARKIND = [
+  {t:"شراء المواد المباشرة بسعر أعلى من السعر المعياري للكيلوجرام", k:"p", why:"الفرق ناتج عن السعر مع ثبات الكمية، فهو انحراف سعر."},
+  {t:"استهلاك كمية مواد أكبر من الكمية المعيارية المسموح بها", k:"e", why:"الفرق ناتج عن كمية الاستخدام مع ثبات السعر المعياري، فهو انحراف كفاءة."},
+  {t:"ارتفاع معدل أجر الساعة الفعلي عن المعدل المعياري", k:"p", why:"سعر المدخل (أجر الساعة) اختلف مع ثبات عدد الساعات، فهو انحراف سعر."},
+  {t:"استخدام عدد ساعات عمل أكبر من الساعات المعيارية المسموح بها", k:"e", why:"كمية المدخل (الساعات) اختلفت مع ثبات معدل الأجر المعياري، فهو انحراف كفاءة."},
+  {t:"انخفاض سعر شراء المواد عن السعر المعياري", k:"p", why:"الفرق في سعر المدخل، فهو انحراف سعر (مواتٍ في هذه الحالة)."},
+  {t:"إسراف العمال في استخدام المواد الخام أثناء الإنتاج", k:"e", why:"الإسراف يزيد الكمية المستخدمة عن المعيارية، فهو انحراف كفاءة."},
+  {t:"دفع أجور للعمال بمعدل يختلف عن المعدل المخطط", k:"p", why:"اختلاف معدل الأجر (سعر المدخل)، فهو انحراف سعر."},
+  {t:"إنجاز الإنتاج بساعات عمل أقل من المعيارية بفضل كفاءة العمال", k:"e", why:"توفير في كمية الساعات، فهو انحراف كفاءة (مواتٍ)."},
+  {t:"الفرق الناتج عن قياس السعر بثبات الكمية عند مستواها الفعلي", k:"p", why:"هذا هو تعريف انحراف السعر: (الفعلي − المعياري) × الكمية الفعلية."},
+  {t:"الفرق الناتج عن قياس الكمية بثبات السعر عند مستواه المعياري", k:"e", why:"هذا هو تعريف انحراف الكفاءة: (الفعلية − المعيارية) × السعر المعياري."},
+  {t:"توريد مواد بجودة أرخص خفّض سعر الكيلوجرام", k:"p", why:"التغيّر في سعر المدخل، فهو انحراف سعر."},
+  {t:"تعطّل آلة أدى إلى زيادة ساعات العمل اللازمة للإنتاج", k:"e", why:"زيادة كمية الساعات المستخدمة، فهو انحراف كفاءة."}
+];
+
+/* ---- 17) مواتٍ أم غير مواتٍ؟ ---- */
+/* k: f = مواتٍ (في صالح المنشأة)، u = غير مواتٍ */
+const GM_FAV = [
+  {t:"الإيراد الفعلي أكبر من الإيراد المعياري (المخطط)", k:"f", why:"زيادة الإيراد الفعلي عن المعياري في صالح المنشأة."},
+  {t:"التكلفة الفعلية أقل من التكلفة المعيارية", k:"f", why:"انخفاض التكلفة الفعلية عن المعيارية في صالح المنشأة."},
+  {t:"التكلفة الفعلية أعلى من التكلفة المعيارية", k:"u", why:"زيادة التكلفة الفعلية عن المعيارية في غير صالح المنشأة."},
+  {t:"الإيراد الفعلي أقل من الإيراد المعياري", k:"u", why:"نقص الإيراد الفعلي عن المعياري في غير صالح المنشأة."},
+  {t:"السعر الفعلي لشراء المواد أعلى من السعر المعياري", k:"u", why:"دفع سعر أعلى للمدخل يرفع التكلفة، فالانحراف غير مواتٍ."},
+  {t:"استُهلكت كمية مواد أقل من الكمية المعيارية المسموح بها", k:"f", why:"توفير في المواد يخفّض التكلفة، فالانحراف مواتٍ."},
+  {t:"استُخدمت ساعات عمل أكثر من الساعات المعيارية", k:"u", why:"زيادة الساعات ترفع تكلفة الأجور، فالانحراف غير مواتٍ."},
+  {t:"معدل أجر الساعة الفعلي أقل من المعدل المعياري", k:"f", why:"دفع أجر أقل يخفّض التكلفة، فالانحراف مواتٍ."},
+  {t:"انحراف الكفاءة للمواد ناتج عن استخدام كمية أكبر من المسموح", k:"u", why:"الإسراف في المواد يرفع التكلفة، فالانحراف غير مواتٍ."},
+  {t:"إنجاز الإنتاج بكمية مواد أقل من المعيار", k:"f", why:"توفير المواد يخفّض التكلفة، فالانحراف مواتٍ."},
+  {t:"ارتفاع تكلفة الأجور الفعلية عن المعيارية", k:"u", why:"زيادة تكلفة فعلية عن المعيارية في غير صالح المنشأة."},
+  {t:"بيع وحدات أكثر مما خُطّط له بنفس السعر", k:"f", why:"زيادة المبيعات ترفع الإيراد وهامش المساهمة، فالانحراف مواتٍ."}
+];
+
+/* ---- 18) مفاهيم التكاليف المعيارية ---- */
+const GM_STD_CONCEPT = [
+  { q:"التكلفة المعيارية هي:",
+    o:["التكلفة الفعلية بعد التشغيل","تكلفة محددة مقدماً كمعيار للأداء يُقارن به الفعلي","متوسط تكاليف السنوات السابقة","التكلفة التقديرية للمبيعات"], c:1,
+    why:"التكلفة المعيارية تكلفة محددة مسبقاً تُقارن بها التكلفة الفعلية للكشف عن الانحرافات." },
+  { q:"وجود التكاليف المعيارية:",
+    o:["يُغني عن الحاجة إلى التكاليف الفعلية","لا ينفي الحاجة إلى التكاليف الفعلية بل يكمّلها","يُستخدم للتسعير فقط","يمنع حدوث الانحرافات"], c:1,
+    why:"لا بد من التكاليف الفعلية لمقارنتها بالمعيارية والوصول إلى الانحرافات." },
+  { q:"الموازنة الساكنة (Static Budget) تُعدّ على أساس:",
+    o:["مستوى النشاط الفعلي","مستوى نشاط واحد مخطط لا يتغير","عدة مستويات نشاط","المبيعات الفعلية"], c:1,
+    why:"الموازنة الساكنة تُبنى على مستوى نشاط واحد مخطط ولا تُعدَّل مع تغيّر النشاط الفعلي." },
+  { q:"الموازنة المرنة (Flexible Budget) تتميز بأنها:",
+    o:["ثابتة لا تتغير","تُعدّل لتعكس مستوى النشاط الفعلي","تلغي الحاجة للانحرافات","تُعدّ سنوياً فقط"], c:1,
+    why:"الموازنة المرنة تُعدَّل لتناسب مستوى النشاط الفعلي، فتفصل أثر الحجم عن باقي الأسباب." },
+  { q:"المستوى صفر من تحليل انحرافات الموازنة الساكنة:",
+    o:["الأكثر تفصيلاً بنداً بنداً","يقارن الدخل الفعلي بالمخطط مباشرة لانحراف إجمالي واحد","يحلل انحراف السعر فقط","يحلل انحراف الكفاءة فقط"], c:1,
+    why:"المستوى صفر هو الأقل تفصيلاً: انحراف إجمالي واحد بين الدخل الفعلي والمخطط." },
+  { q:"انحراف حجم المبيعات يساوي:",
+    o:["(وحدات المرنة − وحدات الساكنة) × هامش المساهمة المخطط للوحدة","(السعر الفعلي − المعياري) × الكمية","التكاليف الثابتة ÷ الهامش","الإيراد − التكلفة"], c:0,
+    why:"انحراف حجم المبيعات = (وحدات المبيعات للموازنة المرنة − وحدات الساكنة) × هامش المساهمة المخطط للوحدة." },
+  { q:"الغرض من تحليل الانحرافات إلى فرعية (سعر وكفاءة) هو:",
+    o:["زيادة تعقيد الحسابات","زيادة المعلومات لمتخذ القرار لأغراض التخطيط والرقابة","إخفاء الأخطاء","حساب الضرائب"], c:1,
+    why:"التحليل الفرعي يفصل أسباب الانحراف فيزيد المعلومات المفيدة للتخطيط والرقابة وقياس الأداء." },
+  { q:"انحراف الموازنة المرنة لعنصر التكلفة =",
+    o:["انحراف السعر − انحراف الكفاءة","انحراف السعر + انحراف الكفاءة","انحراف الحجم فقط","السعر × الكمية"], c:1,
+    why:"الانحراف الإجمالي للعنصر = انحراف السعر + انحراف الكفاءة (كما في مثال المواد: 9,375 + 30,000)." }
+];
+
+/* ============================================================
    ألعاب محاسبة التكاليف — المحرك
    الوحدة الأولى (4 ألعاب) + الوحدة الثانية (4 ألعاب) + تحدٍّ شامل
    وضع فردي ووضع فرق. مستقل تماماً عن محرك التطبيق.
@@ -1188,9 +1254,16 @@ const UNITS_DEF = {
          target:{em:"💰", name:"الربح المستهدف وهامش الأمان", desc:"احسب الوحدات اللازمة لربح مستهدف، ثم هامش الأمان بالنسبة المئوية." },
          sens:{  em:"⚖️", name:"اتجاه التغيّر", desc:"تغيّر في السعر أو التكلفة أو الثابتة، توقّع أثره على هامش المساهمة ونقطة التعادل." },
          cvp:{   em:"📈", name:"اقرأ خريطة التعادل", desc:"خريطة التعادل تظهر أمامك، حدّد نقطة التعادل ومنطقة الربح والخسارة وخطوطها." }
+       }},
+  u5:{ n:"الوحدة الخامسة", s:"التكاليف المعيارية وتحليل الانحرافات", em:"📓",
+       games:{
+         varc:{  em:"🧮", name:"آلة حاسبة الانحرافات", desc:"احسب انحراف السعر، ثم انحراف الكفاءة، ثم الانحراف الإجمالي واتجاهه للمواد والأجور." },
+         vkind:{ em:"🎯", name:"سعر أم كفاءة؟", desc:"سبب أو موقف يظهر أمامك، حدّد نوع الانحراف: انحراف سعر أم انحراف كفاءة." },
+         fav:{   em:"⚖️", name:"مواتٍ أم غير مواتٍ؟", desc:"حالة تظهر أمامك، حدّد اتجاه الانحراف: في صالح المنشأة أم في غير صالحها." },
+         std:{   em:"📊", name:"مفاهيم المعيارية", desc:"أسئلة على التكلفة المعيارية والموازنة الساكنة والمرنة وانحراف حجم المبيعات." }
        }}
 };
-var GM_ONLY = (typeof GM_BUILD_UNITS !== "undefined") ? GM_BUILD_UNITS : ["u1","u2","u3","u4"];
+var GM_ONLY = (typeof GM_BUILD_UNITS !== "undefined") ? GM_BUILD_UNITS : ["u1","u2","u3","u4","u5"];
 function unitIds(){ return GM_ONLY.filter(u=>UNITS_DEF[u]); }
 function gameMeta(id){
   for(const u of unitIds()){ const g=UNITS_DEF[u].games[id]; if(g) return Object.assign({unit:u}, g); }
@@ -1198,7 +1271,7 @@ function gameMeta(id){
   return null;
 }
 /* الألعاب ذات السؤال الواحد — وحدها تدخل التحدي الشامل */
-const ONESHOT = { matrix:1, func:1, cmp:1, sort:1, charts:1, factory:1, jvp:1, doc:1, entry:1, sens:1, cvp:1 };
+const ONESHOT = { matrix:1, func:1, cmp:1, sort:1, charts:1, factory:1, jvp:1, doc:1, entry:1, sens:1, cvp:1, vkind:1, fav:1, std:1 };
 
 /* ---------- الحالة ---------- */
 let S=null, root=null, tick=null;
@@ -2187,16 +2260,214 @@ function cvpView(){
 }
 
 /* ============================================================
+   و٥ – ١) آلة حاسبة الانحرافات
+   ============================================================ */
+function makeVar(){
+  const mat = Math.random()<.5;
+  // معياري: سعر وكمية للوحدة، وعدد وحدات منتجة → كمية معيارية مسموحة = الوحدات × المعيار للوحدة
+  const sp = mat ? pick([6,8,10,12,15]) : pick([4,5,6,8]);          // السعر المعياري (ريال)
+  const units = pick([10000,12000,15000,20000]);                   // الوحدات المنتجة
+  const stdPerUnit = pick([1,2]);                                  // معيار المدخل للوحدة (كجم أو ساعة)
+  const stdQ = units*stdPerUnit;                                   // الكمية المعيارية المسموح بها
+  const priceDelta = pick([0.5,1,1.5,2]) * (Math.random()<.5?1:-1); // فرق السعر الفعلي
+  const ap = Math.round((sp+priceDelta)*100)/100;                 // السعر الفعلي
+  const qFactor = pick([1.05,1.10,1.15,0.90,0.95]);              // نسبة الكمية الفعلية للمعيارية
+  let aq = Math.round(stdQ*qFactor/50)*50;                        // الكمية الفعلية (مضاعفات 50)
+  if(aq===stdQ) aq += 500;
+  const priceVar = Math.round((ap-sp)*aq*100)/100;               // انحراف السعر
+  const effVar = Math.round((aq-stdQ)*sp*100)/100;               // انحراف الكفاءة
+  const total = Math.round((priceVar+effVar)*100)/100;
+  return { mat, sp, ap, aq, stdQ, units, stdPerUnit, priceVar, effVar, total,
+           qU: mat?"كجم":"ساعة", nm: mat?"المواد المباشرة":"الأجور المباشرة",
+           priceLbl: mat?"سعر الكيلوجرام":"معدل أجر الساعة" };
+}
+function favWord(v){ return v>0 ? "في غير صالح المنشأة" : v<0 ? "في صالح المنشأة" : "لا انحراف"; }
+function varcStart(){ S.g={p:makeVar(), step:0, val:"", fb:null, warn:null, score:0,right:0,wrong:0, solved:0, target:S.mode==="teams"?1:3}; }
+function varcInput(v){ S.g.val=v; }
+function varcSpecs(){
+  const p=S.g.p;
+  return [
+   {lab:"انحراف السعر", ans:p.priceVar, pts:20,
+    q:`في تحليل ${p.nm}: السعر المعياري ${N(p.sp)} ريال والسعر الفعلي ${N(p.ap)} ريال، والكمية الفعلية ${N(p.aq)} ${p.qU}. كم انحراف السعر؟ (بالقيمة المطلقة)`,
+    w:`انحراف السعر = (السعر الفعلي − المعياري) × الكمية الفعلية = (${N(p.ap)} − ${N(p.sp)}) × ${N(p.aq)} = <b>${N(Math.abs(p.priceVar))}</b> ريال ${favWord(p.priceVar)}`,
+    real:Math.abs(p.priceVar)},
+   {lab:"انحراف الكفاءة", ans:Math.abs(p.effVar), pts:20,
+    q:`الكمية الفعلية ${N(p.aq)} ${p.qU}، والكمية المعيارية المسموح بها ${N(p.stdQ)} ${p.qU} (${N(p.units)} وحدة × ${p.stdPerUnit} ${p.qU})، والسعر المعياري ${N(p.sp)} ريال. كم انحراف الكفاءة؟`,
+    w:`انحراف الكفاءة = (الكمية الفعلية − المعيارية المسموحة) × السعر المعياري = (${N(p.aq)} − ${N(p.stdQ)}) × ${N(p.sp)} = <b>${N(Math.abs(p.effVar))}</b> ريال ${favWord(p.effVar)}`,
+    real:Math.abs(p.effVar)},
+   {lab:"الانحراف الإجمالي", ans:Math.abs(p.total), pts:15,
+    q:`انحراف السعر ${N(Math.abs(p.priceVar))} ريال ${favWord(p.priceVar)}، وانحراف الكفاءة ${N(Math.abs(p.effVar))} ريال ${favWord(p.effVar)}. كم الانحراف الإجمالي (بالقيمة المطلقة)؟`,
+    w:`الانحراف الإجمالي = انحراف السعر + انحراف الكفاءة (بإشارتيهما) = ${p.priceVar<0?"−":""}${N(Math.abs(p.priceVar))} ${p.effVar<0?"− ":"+ "}${N(Math.abs(p.effVar))} = <b>${N(Math.abs(p.total))}</b> ريال ${favWord(p.total)}`,
+    real:Math.abs(p.total)}
+  ];
+}
+function varcCheck(){
+  const g=S.g, sp=varcSpecs()[g.step];
+  const v=parseFloat(String(g.val).replace(/[,\s]/g,""));
+  if(isNaN(v)){ g.warn="اكتب رقماً."; return draw(); }
+  g.warn=null;
+  const ok=Math.abs(v-sp.real)<0.5; mark(ok); if(ok) addScore(sp.pts);
+  if(!ok) logErr(sp.lab, N(sp.real)+" ريال", N(v), sp.w.replace(/<[^>]+>/g,""));
+  g.fb={ok, ans:N(sp.real)+" ريال", work:sp.w}; draw();
+}
+function varcDir(v){
+  const g=S.g, sp=varcSpecs()[g.step], p=g.p;
+  const realV = g.step===0?p.priceVar : g.step===1?p.effVar : p.total;
+  if(g.fb2) return;
+  const isFav = v==="fav";
+  const ok = (realV<0)===isFav; mark(ok); if(ok) addScore(5);
+  else logErr(sp.lab+" — الاتجاه", favWord(realV), isFav?"في صالح المنشأة":"في غير صالح المنشأة",
+              "المدخل الأغلى أو الكمية الأكبر يرفعان التكلفة، فيكون الانحراف في غير صالح المنشأة.");
+  g.fb2={ok, ans:favWord(realV)}; draw();
+}
+function varcNext(){
+  const g=S.g; g.fb=null; g.fb2=null; g.val=""; g.warn=null; g.step++;
+  if(g.step>2){
+    g.solved++; g.step=0;
+    if(S.mode==="teams"){ nextTurn(); if(S.qDone>=S.teamQ) return finish(); }
+    else if(g.solved>=g.target) return finish();
+    g.p=makeVar();
+  }
+  draw();
+}
+function varcView(){
+  const g=S.g, all=varcSpecs(), sp=all[g.step];
+  const dirBtns=g.fb&&!g.fb2 ? `<div class="gm-opts" style="margin-top:10px">
+      <button class="gm-opt" onclick="GM.varcDir('fav')"><span>في صالح المنشأة</span></button>
+      <button class="gm-opt" onclick="GM.varcDir('unfav')"><span>في غير صالح المنشأة</span></button></div>` : "";
+  return `${hud([S.mode==="teams"?"🧮 مسألة":"🧮 مسألة "+(g.solved+1)+" / "+g.target])}
+    <div class="gm-steps">${all.map((x,i)=>`<div class="gm-step ${i===g.step?"on":i<g.step?"done":""}">${i+1}. ${x.lab}</div>`).join("")}</div>
+    <div class="gm-card">
+      <div class="gm-eq">انحراف السعر = (الفعلي − المعياري) × الكمية الفعلية</div>
+      <h3 class="gm-q">${E(sp.q)}</h3>
+      <input class="gm-num" inputmode="decimal" placeholder="اكتب الرقم (ريال)" value="${E(g.val)}"
+        oninput="GM.varcInput(this.value)" onkeydown="if(event.key==='Enter')GM.varcCheck()" ${g.fb?"disabled":""}>
+      ${g.warn?`<div class="gm-fb no">${E(g.warn)}</div>`:""}
+      ${g.fb?`<div class="gm-fb ${g.fb.ok?"ok":"no"}"><b>${g.fb.ok?"إجابة صحيحة":"إجابة غير صحيحة"} — الإجابة النموذجية: ${E(g.fb.ans)}</b></div>
+        <div class="gm-work"><b>الحل:</b><br>${g.fb.work}</div>`:""}
+      ${g.fb&&!g.fb2?`<p class="gm-q" style="margin-top:12px">وما اتجاه هذا الانحراف؟</p>`:""}
+      ${dirBtns}
+      ${g.fb2?`<div class="gm-fb ${g.fb2.ok?"ok":"no"}"><b>${g.fb2.ok?"صحيح":"غير صحيح"} — الاتجاه: ${E(g.fb2.ans)}</b></div>`:""}
+      <div class="gm-actions">${g.fb
+        ? (g.fb2?`<button class="gm-btn p" onclick="GM.varcNext()">${g.step>=2?"مسألة جديدة ←":"الخطوة التالية ←"}</button>`:"")
+        : `<button class="gm-btn p" onclick="GM.varcCheck()">تحقّق</button>`}</div>
+    </div>`;
+}
+
+/* ============================================================
+   و٥ – ٢) سعر أم كفاءة؟
+   ============================================================ */
+const VK={p:"انحراف سعر",e:"انحراف كفاءة"};
+const VKSUB={p:"فرق في سعر المدخل",e:"فرق في كمية المدخل"};
+function vkindStart(one){
+  S.g={deck:sh(GM_VARKIND), i:0, score:0,right:0,wrong:0, streak:0,bestStreak:0, lives:3, t:SORT_TIME, fb:null, picked:null};
+  if(!one && S.mode==="solo") startTimer();
+}
+function vkindAnswer(k){
+  const g=S.g; if(g.fb) return;
+  const it=g.deck[g.i], ok=it.k===k; g.picked=k; mark(ok);
+  if(ok){ g.streak++; g.bestStreak=Math.max(g.bestStreak,g.streak);
+    const mult=g.streak>=8?3:g.streak>=4?2:1; addScore(10*mult); g.fb={ok:true,mult,why:it.why,cat:VK[it.k]}; }
+  else { g.streak=0; g.lives--; g.fb={ok:false,why:it.why,cat:VK[it.k]}; logErr(it.t,VK[it.k],VK[k],it.why); }
+  draw();
+}
+function vkindNext(){
+  const g=S.g; g.fb=null; g.picked=null;
+  if(advance()) return;
+  g.i++; if(g.lives<=0) return finish();
+  if(g.i>=g.deck.length){ g.deck=sh(GM_VARKIND); g.i=0; }
+  draw();
+}
+function vkindView(){
+  const g=S.g,it=g.deck[g.i];
+  const btn=k=>{ let c="sb-"+(k==="p"?"f":"m"); if(g.fb){ if(k===it.k) c+=" right"; else if(k===g.picked) c+=" wrong"; }
+    return `<button class="${c}" ${g.fb?"disabled":""} onclick="GM.vkindAnswer('${k}')">${VK[k]}<span>${VKSUB[k]}</span></button>`; };
+  return `${hud(["📦 "+(g.i+1)])}
+    <div class="gm-item ${g.fb?(g.fb.ok?"ok":"no"):""}">${E(it.t)}</div>
+    <div class="gm-sortbtns" style="grid-template-columns:1fr 1fr">${btn("p")}${btn("e")}</div>
+    ${g.fb?`<div class="gm-fb ${g.fb.ok?"ok":"no"}">
+      <b>${g.fb.ok?"إجابة صحيحة":"إجابة غير صحيحة"} — النوع الصحيح: ${g.fb.cat}</b>
+      ${g.fb.ok&&g.fb.mult>1?`<span class="gm-combo">×${g.fb.mult} سلسلة ${g.streak}</span>`:""}
+      <div>${E(g.fb.why)}</div></div>${nextBtn("GM.vkindNext()")}`:""}`;
+}
+
+/* ============================================================
+   و٥ – ٣) مواتٍ أم غير مواتٍ؟
+   ============================================================ */
+const FAV={f:"في صالح المنشأة",u:"في غير صالح المنشأة"};
+const FAVSUB={f:"مواتٍ",u:"غير مواتٍ"};
+function favStart(one){
+  S.g={deck:sh(GM_FAV), i:0, score:0,right:0,wrong:0, streak:0,bestStreak:0, lives:3, t:SORT_TIME, fb:null, picked:null};
+  if(!one && S.mode==="solo") startTimer();
+}
+function favAnswer(k){
+  const g=S.g; if(g.fb) return;
+  const it=g.deck[g.i], ok=it.k===k; g.picked=k; mark(ok);
+  if(ok){ g.streak++; g.bestStreak=Math.max(g.bestStreak,g.streak);
+    const mult=g.streak>=8?3:g.streak>=4?2:1; addScore(10*mult); g.fb={ok:true,mult,why:it.why,cat:FAV[it.k]}; }
+  else { g.streak=0; g.lives--; g.fb={ok:false,why:it.why,cat:FAV[it.k]}; logErr(it.t,FAV[it.k],FAV[k],it.why); }
+  draw();
+}
+function favNext(){
+  const g=S.g; g.fb=null; g.picked=null;
+  if(advance()) return;
+  g.i++; if(g.lives<=0) return finish();
+  if(g.i>=g.deck.length){ g.deck=sh(GM_FAV); g.i=0; }
+  draw();
+}
+function favView(){
+  const g=S.g,it=g.deck[g.i];
+  const btn=k=>{ let c="sb-"+(k==="f"?"f":"v"); if(g.fb){ if(k===it.k) c+=" right"; else if(k===g.picked) c+=" wrong"; }
+    return `<button class="${c}" ${g.fb?"disabled":""} onclick="GM.favAnswer('${k}')">${FAV[k]}<span>${FAVSUB[k]}</span></button>`; };
+  return `${hud(["📦 "+(g.i+1)])}
+    <div class="gm-item ${g.fb?(g.fb.ok?"ok":"no"):""}">${E(it.t)}</div>
+    <div class="gm-sortbtns" style="grid-template-columns:1fr 1fr">${btn("f")}${btn("u")}</div>
+    ${g.fb?`<div class="gm-fb ${g.fb.ok?"ok":"no"}">
+      <b>${g.fb.ok?"إجابة صحيحة":"إجابة غير صحيحة"} — الاتجاه الصحيح: ${g.fb.cat}</b>
+      ${g.fb.ok&&g.fb.mult>1?`<span class="gm-combo">×${g.fb.mult} سلسلة ${g.streak}</span>`:""}
+      <div>${E(g.fb.why)}</div></div>${nextBtn("GM.favNext()")}`:""}`;
+}
+
+/* ============================================================
+   و٥ – ٤) مفاهيم المعيارية
+   ============================================================ */
+function stdStart(one){
+  const all=sh(GM_STD_CONCEPT.map(q=>({q:q.q, opts:q.o.slice(), ans:q.o[q.c], why:q.why})));
+  S.g={ qs: one?[all[0]] : all.slice(0, S.mode==="teams"?S.teamQ:8), i:0, score:0,right:0,wrong:0, fb:null, picked:null };
+}
+function stdAnswer(v){
+  const g=S.g; if(g.fb) return;
+  const q=g.qs[g.i], ok=v===q.ans; g.picked=v; mark(ok);
+  if(ok) addScore(12); else logErr(q.q, q.ans, v, q.why);
+  g.fb={ok,ans:q.ans,why:q.why}; draw();
+}
+function stdNext(){
+  const g=S.g; g.fb=null; g.picked=null;
+  if(advance()) return;
+  g.i++; if(g.i>=g.qs.length) return finish();
+  draw();
+}
+function stdView(){
+  const g=S.g,q=g.qs[g.i];
+  return `${hud(["📊 "+(g.i+1)+(S.mixed?"":" / "+g.qs.length)])}
+    <div class="gm-card"><h3 class="gm-q">${E(q.q)}</h3>
+      ${opts(q.opts,g.fb,q.ans,g.picked,"GM.stdAnswer")}
+      ${g.fb?fbBox(g.fb.ok,g.fb.ans,g.fb.why)+nextBtn("GM.stdNext()"):""}</div>`;
+}
+
+/* ============================================================
    تحدٍّ شامل
    ============================================================ */
 const STARTERS={ sort:sortStart, charts:chartsStart, highlow:hlStart, factory:facStart,
                  matrix:matrixStart, func:funcStart, cmp:cmpStart, stmt:stmtStart,
                  jvp:jvpStart, doc:docStart, entry:entryStart, oh:ohStart,
-                 be:beStart, target:tpStart, sens:sensStart, cvp:cvpStart };
+                 be:beStart, target:tpStart, sens:sensStart, cvp:cvpStart,
+                 varc:varcStart, vkind:vkindStart, fav:favStart, std:stdStart };
 const VIEWS={ sort:sortView, charts:chartsView, highlow:hlView, factory:facView,
               matrix:matrixView, func:funcView, cmp:cmpView, stmt:stmtView,
               jvp:jvpView, doc:docView, entry:entryView, oh:ohView,
-              be:beView, target:tpView, sens:sensView, cvp:cvpView };
+              be:beView, target:tpView, sens:sensView, cvp:cvpView,
+              varc:varcView, vkind:vkindView, fav:favView, std:stdView };
 function mixPool(){
   const out=[];
   unitIds().forEach(u=> Object.keys(UNITS_DEF[u].games).forEach(g=>{ if(ONESHOT[g]) out.push(g); }));
@@ -2397,6 +2668,8 @@ function keys(e){
     if(S.game==="func"){ if(e.key==="1")funcAnswer("p"); if(e.key==="2")funcAnswer("s"); if(e.key==="3")funcAnswer("a"); }
     if(S.game==="jvp"){ if(e.key==="1")jvpAnswer("j"); if(e.key==="2")jvpAnswer("p"); }
     if(S.game==="doc"){ if(e.key==="1")docAnswer("cost"); if(e.key==="2")docAnswer("req"); if(e.key==="3")docAnswer("tkt"); }
+    if(S.game==="vkind"){ if(e.key==="1")vkindAnswer("p"); if(e.key==="2")vkindAnswer("e"); }
+    if(S.game==="fav"){ if(e.key==="1")favAnswer("f"); if(e.key==="2")favAnswer("u"); }
   }
 }
 function home(){ stopTimer(); S.screen="home"; S.game=null; S.mixed=false; S.g=null; S.mix=null;
@@ -2426,7 +2699,9 @@ return { open, close, home, play, quit, setUnit, setMode, setQ, toggleBig, teamN
   jvpAnswer, jvpNext, docAnswer, docNext, entryAnswer, entryNext,
   ohInput, ohCheck, ohDir, ohTreat, ohNext,
   beInput, beCheck, beNext, tpInput, tpCheck, tpNext,
-  sensAnswer, sensNext, cvpAnswer, cvpNext };
+  sensAnswer, sensNext, cvpAnswer, cvpNext,
+  varcInput, varcCheck, varcDir, varcNext, vkindAnswer, vkindNext,
+  favAnswer, favNext, stdAnswer, stdNext };
 })();
 
 </script>
@@ -4657,8 +4932,8 @@ const GUIDE = [
    "صح وخطأ: حدّد صحة كل عبارة ويظهر التصحيح مع شرح موجز للعبارات التي لها شرح.",
    "أسئلة مقالية: حاول الإجابة ذهنياً أو كتابةً ثم اضغط «👁️ إظهار الإجابة» لكشف نموذج الإجابة، أو «إظهار كل الإجابات» لكشفها دفعة واحدة."
  ]},
- { id:"g10", icon:"🎮", title:"ألعاب المقرر (الوحدات الأربع)", paras:[
-   "زر «🎮 العب وتعلّم» داخل صفحات الوحدات الأربع (وزر «🎮 ألعاب المقرر» في الصفحة الرئيسية) يفتح ست عشرة لعبة تدريبية، أربعاً لكل وحدة، إضافة إلى وضع «تحدٍّ شامل».",
+ { id:"g10", icon:"🎮", title:"ألعاب المقرر (المقرر كامل — 5 وحدات)", paras:[
+   "زر «🎮 العب وتعلّم» داخل صفحات الوحدات الخمس (وزر «🎮 ألعاب المقرر» في الصفحة الرئيسية) يفتح عشرين لعبة تدريبية، أربعاً لكل وحدة، إضافة إلى وضع «تحدٍّ شامل».",
    "ألعاب الوحدة الأولى — مفهوم التكاليف وتبويباتها:"
  ], steps:[
    "🎯 مصفوفة التبويب: يظهر بند تكلفة وتضعه في تقاطعه الصحيح من ست خانات — مواد أم عمل أم خدمات × مباشرة أم غير مباشرة. هذا التقاطع هو أساس بناء قوائم التكاليف.",
@@ -4669,7 +4944,8 @@ const GUIDE = [
    "ألعاب الوحدة الثانية — سلوك التكاليف: 🗂️ فرز التكاليف (ثابتة/متغيرة/مختلطة بمؤقت وأرواح وسلاسل)، 📈 اقرأ الرسم البياني (يكسر الخلط بين إجمالي التكلفة وتكلفة الوحدة)، 🧮 تحدي أعلى وأدنى مستوى (أربع خطوات مصحّحة على جدول جديد كل مرة)، 🏭 مصنع تحت إدارتك (حساب التكاليف والتسعير وقرار الطلبية الإضافية).",
    "ألعاب الوحدة الثالثة — نظام تكاليف الأوامر: 🔀 الأوامر أم المراحل؟ (تحديد النظام المناسب لكل منشأة)، 🧾 المستند الصحيح (قائمة تكاليف الأمر أم إذن صرف المواد أم بطاقة العمل)، ⚖️ قيد اليومية (اختيار القيد الصحيح — مَن المدين ومَن الدائن في الحسابات السبعة)، 🏭 تحميل التكاليف والفرق (حساب ت.ص.غ.م المحمَّلة بالمعدل التقديري ثم فرق التحميل واتجاهه ومعالجته).",
    "ألعاب الوحدة الرابعة — تحليل التكلفة والحجم والربح: 🎯 آلة حاسبة التعادل (هامش المساهمة ونقطة التعادل بالوحدات والقيمة)، 💰 الربح المستهدف وهامش الأمان (الوحدات اللازمة لربح مستهدف ثم هامش الأمان ٪)، ⚖️ اتجاه التغيّر (توقّع أثر تغيّر السعر أو التكلفة أو الثابتة على الهامش والتعادل)، 📈 اقرأ خريطة التعادل (تحديد نقطة التعادل ومناطق الربح والخسارة على الرسم).",
-   "🔀 تحدٍّ شامل: يسحب أسئلة عشوائية من كل الألعاب ذات السؤال الواحد في الوحدات الأربع — مناسب للمراجعة قبل الاختبار وللمسابقة الصفية.",
+   "ألعاب الوحدة الخامسة — التكاليف المعيارية وتحليل الانحرافات: 🧮 آلة حاسبة الانحرافات (انحراف السعر ثم الكفاءة ثم الإجمالي واتجاهه للمواد والأجور)، 🎯 سعر أم كفاءة؟ (تحديد نوع الانحراف من سببه)، ⚖️ مواتٍ أم غير مواتٍ؟ (اتجاه الانحراف في صالح المنشأة أو ضدها)، 📊 مفاهيم المعيارية (الموازنة الساكنة والمرنة وانحراف حجم المبيعات).",
+   "🔀 تحدٍّ شامل: يسحب أسئلة عشوائية من كل الألعاب ذات السؤال الواحد في الوحدات الخمس — مناسب للمراجعة قبل الاختبار وللمسابقة الصفية.",
    "في كل لعبة تظهر الإجابة النموذجية وتعليلها، ومع الأسئلة الحسابية يظهر الحل خطوة بخطوة. وينتهي الوضع الفردي بتقرير يجمع أخطاءك وتعليل كل منها، مع حفظ أفضل نتيجة لكل لعبة.",
    "وضع الفرق: ٢ إلى ٤ فرق بأسمائها وعدد أسئلة تختاره، تتناوب الأدوار مع لوحة نتائج مباشرة، وزر «🔎 خط كبير» ليُقرأ من آخر القاعة عبر جهاز العرض. ومفتاح Esc يُنهي الجولة أو يغلق اللعبة."
  ]},
@@ -4782,7 +5058,7 @@ function renderHome(){
       <button class="btn btn-out" onclick="printFullCurriculum()">🖨️ تصدير المنهج الكامل PDF</button>
       <button class="btn btn-out" onclick="goto('#/map')">🗺️ خريطة المنهج الكاملة</button>
       <button class="btn btn-out" onclick="goto('#/glossary')">§ مسرد المصطلحات</button>
-      <button class="btn btn-game" onclick="GM.open()">🎮 ألعاب المقرر (الوحدات الأربع)</button>
+      <button class="btn btn-game" onclick="GM.open()">🎮 ألعاب المقرر (المقرر كامل — 5 وحدات)</button>
     </div>
 
     <h2 class="sec-title">وحدات المقرر</h2>
@@ -4807,7 +5083,7 @@ function renderHome(){
             <button class="btn btn-em btn-sm" onclick="goto('#/unit/${u.id}')">فتح الوحدة</button>
             <button class="btn btn-ghost btn-sm" onclick="openPptx('${u.id}')">📽️ PPTX</button>
             <button class="btn btn-ghost btn-sm" onclick="printUnit('${u.id}')">🖨️ PDF</button>
-            ${(u.id==="u1"||u.id==="u2"||u.id==="u3"||u.id==="u4")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب</button>`:""}
+            ${(u.id==="u1"||u.id==="u2"||u.id==="u3"||u.id==="u4"||u.id==="u5")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب</button>`:""}
           </div>
         </div>`;
       }).join("")}
@@ -4878,7 +5154,7 @@ function renderUnit(u){
       <button class="btn btn-em btn-sm" onclick="openPres('${u.id}')">📖 عرض الوحدة تقديمياً</button>
       <button class="btn btn-out btn-sm" onclick="openPptx('${u.id}')">📽️ تصدير PPTX</button>
       <button class="btn btn-out btn-sm" onclick="printUnit('${u.id}')">🖨️ تحميل الوحدة PDF</button>
-      ${(u.id==="u1"||u.id==="u2"||u.id==="u3"||u.id==="u4")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب وتعلّم</button>`:""}
+      ${(u.id==="u1"||u.id==="u2"||u.id==="u3"||u.id==="u4"||u.id==="u5")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب وتعلّم</button>`:""}
     </div>
 
     <div class="obj">
