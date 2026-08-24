@@ -1062,6 +1062,83 @@ const GM_OH_TREAT = [
 ];
 
 /* ============================================================
+   الوحدة الرابعة — تحليل العلاقة بين التكلفة والحجم والربح (CVP)
+   ============================================================ */
+
+/* ---- 13) اتجاه التغيّر (تحليل الحساسية) — أسئلة اختيار ---- */
+const GM_SENS = [
+  { q:"إذا زاد سعر بيع الوحدة (مع ثبات باقي العوامل)، فإن هامش المساهمة للوحدة:",
+    o:["يرتفع","ينخفض","لا يتغير"], c:0,
+    why:"هامش المساهمة = سعر البيع − التكلفة المتغيرة، فزيادة السعر ترفعه (علاقة طردية)." },
+  { q:"إذا زاد سعر بيع الوحدة (مع ثبات باقي العوامل)، فإن نقطة التعادل:",
+    o:["ترتفع","تنخفض","لا تتغير"], c:1,
+    why:"ارتفاع الهامش يزيد نصيب الوحدة من تغطية الثابتة، فتنخفض نقطة التعادل." },
+  { q:"إذا زادت التكلفة المتغيرة للوحدة (مع ثبات باقي العوامل)، فإن هامش المساهمة:",
+    o:["يرتفع","ينخفض","لا يتغير"], c:1,
+    why:"العلاقة بين التكلفة المتغيرة للوحدة وهامش المساهمة عكسية، فزيادتها تخفض الهامش." },
+  { q:"إذا زادت التكلفة المتغيرة للوحدة (مع ثبات باقي العوامل)، فإن نقطة التعادل:",
+    o:["ترتفع","تنخفض","لا تتغير"], c:0,
+    why:"انخفاض الهامش يقلّل تغطية كل وحدة للثابتة، فترتفع نقطة التعادل." },
+  { q:"إذا زادت التكاليف الثابتة (مع ثبات الهامش)، فإن نقطة التعادل:",
+    o:["ترتفع","تنخفض","لا تتغير"], c:0,
+    why:"نقطة التعادل = الثابتة ÷ الهامش، فزيادة الثابتة ترفعها." },
+  { q:"إذا زادت التكاليف الثابتة (مع ثبات السعر والتكلفة المتغيرة)، فإن هامش المساهمة للوحدة:",
+    o:["يرتفع","ينخفض","لا يتغير"], c:2,
+    why:"الهامش يعتمد على السعر والتكلفة المتغيرة فقط، ولا علاقة له بالتكاليف الثابتة." },
+  { q:"إذا انخفضت التكلفة المتغيرة للوحدة (مع ثبات باقي العوامل)، فإن نقطة التعادل:",
+    o:["ترتفع","تنخفض","لا تتغير"], c:1,
+    why:"انخفاض التكلفة المتغيرة يرفع الهامش، فتنخفض نقطة التعادل." },
+  { q:"إذا انخفض سعر بيع الوحدة (مع ثبات باقي العوامل)، فإن نقطة التعادل:",
+    o:["ترتفع","تنخفض","لا تتغير"], c:0,
+    why:"انخفاض السعر يقلّل الهامش، فترتفع نقطة التعادل." },
+  { q:"كلما زاد هامش الأمان، فإن ذلك يدل على:",
+    o:["اقتراب المنشأة من الخطر","ابتعاد المنشأة عن منطقة الخطر","تساوي الإيراد والتكلفة","زيادة التكاليف الثابتة"], c:1,
+    why:"هامش الأمان الأكبر يعني بُعد المبيعات الفعلية عن نقطة التعادل، فيزداد الأمان." },
+  { q:"العلاقة بين التكلفة المتغيرة للوحدة وهامش المساهمة هي علاقة:",
+    o:["طردية","عكسية","لا توجد علاقة","ثابتة"], c:1,
+    why:"كلما زادت التكلفة المتغيرة للوحدة نقص هامش المساهمة، فالعلاقة عكسية." }
+];
+
+/* ---- 14) فرضيات تحليل التعادل — صحيحة أم لا؟ (تُدمج في لعبة الحساسية) ---- */
+const GM_CVP_CONCEPT = [
+  { q:"نقطة التعادل هي النقطة التي:",
+    o:["تزيد فيها الإيرادات عن التكاليف","تتساوى فيها التكاليف الكلية مع الإيرادات الكلية","تزيد فيها التكاليف عن الإيرادات","يتحقق فيها أعلى ربح"], c:1,
+    why:"عند التعادل تتساوى التكاليف الكلية مع الإيرادات الكلية، ونتيجة النشاط تساوي صفراً." },
+  { q:"أيٌّ مما يلي ليس من فرضيات تحليل التعادل؟",
+    o:["ثبات إجمالي التكاليف الثابتة","ثبات أسعار البيع","تغيّر كفاءة عوامل الإنتاج باستمرار","إمكانية تبويب التكاليف إلى ثابتة ومتغيرة"], c:2,
+    why:"من فرضيات التعادل ثبات عوامل الإنتاج لا تغيّرها؛ فالخيار الثالث مخالف للفرضيات." },
+  { q:"هامش المساهمة للوحدة يساوي:",
+    o:["سعر البيع − التكلفة المتغيرة للوحدة","سعر البيع − التكاليف الثابتة","التكاليف الثابتة ÷ عدد الوحدات","الإيرادات − إجمالي التكاليف"], c:0,
+    why:"هامش المساهمة للوحدة = سعر بيع الوحدة − التكلفة المتغيرة للوحدة." },
+  { q:"نقطة التعادل بالوحدات تُحسب بـ:",
+    o:["التكاليف الثابتة × هامش المساهمة","التكاليف الثابتة ÷ هامش المساهمة للوحدة","هامش المساهمة ÷ التكاليف الثابتة","سعر البيع ÷ التكلفة المتغيرة"], c:1,
+    why:"نقطة التعادل بالوحدات = التكاليف الثابتة ÷ هامش المساهمة للوحدة." },
+  { q:"نسبة هامش المساهمة تُحسب بـ:",
+    o:["هامش المساهمة للوحدة ÷ سعر بيع الوحدة","سعر البيع ÷ هامش المساهمة","التكاليف الثابتة ÷ المبيعات","التكلفة المتغيرة ÷ سعر البيع"], c:0,
+    why:"نسبة هامش المساهمة = هامش المساهمة للوحدة ÷ سعر بيع الوحدة." },
+  { q:"عدد الوحدات لتحقيق ربح مستهدف يُحسب بـ:",
+    o:["(الثابتة − الربح) ÷ الهامش","(الثابتة + الربح المستهدف) ÷ هامش المساهمة للوحدة","الربح ÷ الهامش","الثابتة ÷ (الهامش − الربح)"], c:1,
+    why:"عدد الوحدات = (التكاليف الثابتة + الربح المستهدف) ÷ هامش المساهمة للوحدة." }
+];
+
+/* ---- 15) خريطة التعادل — أوصاف مناطق الرسم ---- */
+/* type: يحدد ما يُميَّز على خريطة التعادل */
+const GM_CVP_CHART = [
+  { type:"be",      label:"نقطة التعادل",
+    why:"نقطة التعادل هي حيث يتقاطع خط الإيرادات الكلية مع خط التكاليف الكلية، فتتساوى النتيجة بصفر." },
+  { type:"profit",  label:"منطقة الربح",
+    why:"يمين نقطة التعادل، حيث يعلو خط الإيرادات فوق خط التكاليف الكلية، فتتحقق الأرباح." },
+  { type:"loss",    label:"منطقة الخسارة",
+    why:"يسار نقطة التعادل، حيث يعلو خط التكاليف الكلية فوق خط الإيرادات، فتتحقق الخسائر." },
+  { type:"fixed",   label:"خط التكاليف الثابتة",
+    why:"خط أفقي موازٍ للمحور الأفقي لأن إجمالي التكاليف الثابتة لا يتغير بتغير حجم النشاط." },
+  { type:"total",   label:"خط التكاليف الكلية",
+    why:"يبدأ من مستوى التكاليف الثابتة على المحور الرأسي ثم يرتفع بميل التكلفة المتغيرة للوحدة." },
+  { type:"revenue", label:"خط الإيرادات الكلية",
+    why:"يبدأ من نقطة الأصل (صفر إيراد عند صفر مبيعات) ويرتفع بميل سعر بيع الوحدة." }
+];
+
+/* ============================================================
    ألعاب محاسبة التكاليف — المحرك
    الوحدة الأولى (4 ألعاب) + الوحدة الثانية (4 ألعاب) + تحدٍّ شامل
    وضع فردي ووضع فرق. مستقل تماماً عن محرك التطبيق.
@@ -1104,9 +1181,16 @@ const UNITS_DEF = {
          doc:{   em:"🧾", name:"المستند الصحيح",     desc:"موقف يظهر أمامك، اختر المستند الأساس: قائمة تكاليف الأمر أم إذن صرف المواد أم بطاقة العمل." },
          entry:{ em:"⚖️", name:"قيد اليومية",       desc:"حدث محاسبي يظهر، اختر القيد الصحيح: مَن المدين ومَن الدائن في الحسابات السبعة." },
          oh:{    em:"🏭", name:"تحميل التكاليف والفرق", desc:"احسب ت.ص.غ.م المحمَّلة بالمعدل التقديري، ثم فرق التحميل واتجاهه ومعالجته." }
+       }},
+  u4:{ n:"الوحدة الرابعة", s:"تحليل العلاقة بين التكلفة والحجم والربح", em:"📕",
+       games:{
+         be:{    em:"🎯", name:"آلة حاسبة التعادل", desc:"احسب هامش المساهمة للوحدة، ثم نقطة التعادل بالوحدات، ثم نسبتها، ثم التعادل بالقيمة." },
+         target:{em:"💰", name:"الربح المستهدف وهامش الأمان", desc:"احسب الوحدات اللازمة لربح مستهدف، ثم هامش الأمان بالنسبة المئوية." },
+         sens:{  em:"⚖️", name:"اتجاه التغيّر", desc:"تغيّر في السعر أو التكلفة أو الثابتة، توقّع أثره على هامش المساهمة ونقطة التعادل." },
+         cvp:{   em:"📈", name:"اقرأ خريطة التعادل", desc:"خريطة التعادل تظهر أمامك، حدّد نقطة التعادل ومنطقة الربح والخسارة وخطوطها." }
        }}
 };
-var GM_ONLY = (typeof GM_BUILD_UNITS !== "undefined") ? GM_BUILD_UNITS : ["u1","u2","u3"];
+var GM_ONLY = (typeof GM_BUILD_UNITS !== "undefined") ? GM_BUILD_UNITS : ["u1","u2","u3","u4"];
 function unitIds(){ return GM_ONLY.filter(u=>UNITS_DEF[u]); }
 function gameMeta(id){
   for(const u of unitIds()){ const g=UNITS_DEF[u].games[id]; if(g) return Object.assign({unit:u}, g); }
@@ -1114,7 +1198,7 @@ function gameMeta(id){
   return null;
 }
 /* الألعاب ذات السؤال الواحد — وحدها تدخل التحدي الشامل */
-const ONESHOT = { matrix:1, func:1, cmp:1, sort:1, charts:1, factory:1, jvp:1, doc:1, entry:1 };
+const ONESHOT = { matrix:1, func:1, cmp:1, sort:1, charts:1, factory:1, jvp:1, doc:1, entry:1, sens:1, cvp:1 };
 
 /* ---------- الحالة ---------- */
 let S=null, root=null, tick=null;
@@ -1876,14 +1960,243 @@ function ohView(){
 }
 
 /* ============================================================
+   و٤ – ١) آلة حاسبة التعادل
+   ============================================================ */
+function makeBE(){
+  // نختار سعر البيع ونسبة الهامش بحيث يخرج هامش المساهمة عدداً صحيحاً والنسبة مضبوطة
+  let sp, cmr, cm;
+  do { sp=pick([100,120,150,160,200,250]); cmr=pick([25,40,50,60,75,80]); cm=sp*cmr/100; }
+  while(!Number.isInteger(cm));
+  const vc=sp-cm;                                  // التكلفة المتغيرة للوحدة
+  const beU=pick([1000,1500,2000,2500,3000,4000]); // نقطة التعادل بالوحدات
+  const fc=cm*beU;                                 // التكاليف الثابتة الموافقة
+  const beV=sp*beU;                                // التعادل بالقيمة = ثابتة ÷ نسبة الهامش = sp × beU
+  return { sp, vc, cm, fc, beU, cmr, beV, name:pick(["شركة الماجد","مصنع النور","شركة الرواد","منشأة الوفاء"]) };
+}
+function beStart(){ S.g={p:makeBE(), step:0, val:"", fb:null, warn:null, score:0,right:0,wrong:0, solved:0, target:S.mode==="teams"?1:3}; }
+function beInput(v){ S.g.val=v; }
+function beSpecs(){
+  const p=S.g.p;
+  return [
+   {lab:"هامش المساهمة للوحدة", ans:p.cm, pts:15, u:"ريال",
+    q:`في ${p.name}: سعر بيع الوحدة ${N(p.sp)} ريال، والتكلفة المتغيرة للوحدة ${N(p.vc)} ريال. كم هامش المساهمة للوحدة؟`,
+    w:`هامش المساهمة = سعر البيع − التكلفة المتغيرة = ${N(p.sp)} − ${N(p.vc)} = <b>${N(p.cm)}</b> ريال`},
+   {lab:"نقطة التعادل بالوحدات", ans:p.beU, pts:20, u:"وحدة",
+    q:`التكاليف الثابتة ${N(p.fc)} ريال، وهامش المساهمة للوحدة ${N(p.cm)} ريال. كم نقطة التعادل بالوحدات؟`,
+    w:`نقطة التعادل = التكاليف الثابتة ÷ هامش المساهمة للوحدة = ${N(p.fc)} ÷ ${N(p.cm)} = <b>${N(p.beU)}</b> وحدة`},
+   {lab:"نسبة هامش المساهمة", ans:p.cmr, pts:15, u:"%", pct:true,
+    q:`هامش المساهمة للوحدة ${N(p.cm)} ريال وسعر البيع ${N(p.sp)} ريال. كم نسبة هامش المساهمة (٪)؟`,
+    w:`نسبة هامش المساهمة = هامش المساهمة ÷ سعر البيع = ${N(p.cm)} ÷ ${N(p.sp)} = <b>${p.cmr}%</b>`},
+   {lab:"التعادل بالقيمة", ans:p.beV, pts:20, u:"ريال",
+    q:`التكاليف الثابتة ${N(p.fc)} ريال ونسبة هامش المساهمة ${p.cmr}%. كم التعادل بقيمة المبيعات؟`,
+    w:`التعادل بالقيمة = التكاليف الثابتة ÷ نسبة هامش المساهمة = ${N(p.fc)} ÷ ${p.cmr}% = <b>${N(p.beV)}</b> ريال`}
+  ];
+}
+function beCheck(){
+  const g=S.g, sp=beSpecs()[g.step];
+  const v=parseFloat(String(g.val).replace(/[,\s%]/g,""));
+  if(isNaN(v)){ g.warn="اكتب رقماً."; return draw(); }
+  g.warn=null;
+  const ok=Math.abs(v-sp.ans) < (sp.pct?0.05:0.5); mark(ok); if(ok) addScore(sp.pts);
+  if(!ok) logErr(sp.lab, N(sp.ans)+" "+sp.u, (sp.pct?v:N(v))+"", sp.w.replace(/<[^>]+>/g,""));
+  g.fb={ok, ans:(sp.pct?sp.ans+"%":N(sp.ans)+" "+sp.u), work:sp.w};
+  draw();
+}
+function beNext(){
+  const g=S.g; g.fb=null; g.val=""; g.warn=null; g.step++;
+  if(g.step>3){
+    g.solved++; g.step=0;
+    if(S.mode==="teams"){ nextTurn(); if(S.qDone>=S.teamQ) return finish(); }
+    else if(g.solved>=g.target) return finish();
+    g.p=makeBE();
+  }
+  draw();
+}
+function beView(){
+  const g=S.g, all=beSpecs(), sp=all[g.step];
+  return `${hud([S.mode==="teams"?"🎯 مسألة":"🎯 مسألة "+(g.solved+1)+" / "+g.target])}
+    <div class="gm-steps">${all.map((x,i)=>`<div class="gm-step ${i===g.step?"on":i<g.step?"done":""}">${i+1}. ${x.lab}</div>`).join("")}</div>
+    <div class="gm-card">
+      <div class="gm-eq">نقطة التعادل = التكاليف الثابتة ÷ هامش المساهمة للوحدة</div>
+      <h3 class="gm-q">${E(sp.q)}</h3>
+      <input class="gm-num" inputmode="decimal" placeholder="اكتب الرقم (${E(sp.u)})" value="${E(g.val)}"
+        oninput="GM.beInput(this.value)" onkeydown="if(event.key==='Enter')GM.beCheck()" ${g.fb?"disabled":""}>
+      ${g.warn?`<div class="gm-fb no">${E(g.warn)}</div>`:""}
+      ${g.fb?fbBox(g.fb.ok, g.fb.ans, null, g.fb.work):""}
+      <div class="gm-actions">${g.fb
+        ?`<button class="gm-btn p" onclick="GM.beNext()">${g.step>=3?"مسألة جديدة ←":"الخطوة التالية ←"}</button>`
+        :`<button class="gm-btn p" onclick="GM.beCheck()">تحقّق</button>`}</div>
+    </div>`;
+}
+
+/* ============================================================
+   و٤ – ٢) الربح المستهدف وهامش الأمان
+   ============================================================ */
+function makeTP(){
+  const cm=pick([30,40,50,60,75]);
+  const vc=pick([20,30,40,50]);
+  const sp=vc+cm;
+  const beU=pick([2000,2500,3000,4000]);
+  const fc=cm*beU;
+  const profit=cm*pick([1000,1500,2000,2500,3000]);   // ربح مستهدف يخرج وحدات صحيحة
+  const tpU=(fc+profit)/cm;                            // وحدات الربح المستهدف
+  const actual=tpU + pick([500,1000,1500,2000]);       // مبيعات فعلية أعلى من التعادل
+  const mos=Math.round((actual-beU)/actual*10000)/100; // هامش الأمان %
+  return { sp, vc, cm, fc, beU, profit, tpU, actual, mos, name:pick(["شركة الماجد","مصنع الإبداع","شركة القمة","منشأة التقدم"]) };
+}
+function tpStart(){ S.g={p:makeTP(), step:0, val:"", fb:null, warn:null, score:0,right:0,wrong:0, solved:0, target:S.mode==="teams"?1:3}; }
+function tpInput(v){ S.g.val=v; }
+function tpSpecs(){
+  const p=S.g.p;
+  return [
+   {lab:"هامش المساهمة للوحدة", ans:p.cm, pts:15, u:"ريال",
+    q:`في ${p.name}: سعر البيع ${N(p.sp)} ريال والتكلفة المتغيرة للوحدة ${N(p.vc)} ريال. كم هامش المساهمة للوحدة؟`,
+    w:`هامش المساهمة = ${N(p.sp)} − ${N(p.vc)} = <b>${N(p.cm)}</b> ريال`},
+   {lab:"وحدات الربح المستهدف", ans:p.tpU, pts:20, u:"وحدة",
+    q:`تريد ${p.name} ربحاً مستهدفاً ${N(p.profit)} ريال، وتكاليفها الثابتة ${N(p.fc)} ريال وهامش المساهمة ${N(p.cm)} ريال. كم وحدة يجب بيعها؟`,
+    w:`الوحدات = (التكاليف الثابتة + الربح المستهدف) ÷ هامش المساهمة = (${N(p.fc)} + ${N(p.profit)}) ÷ ${N(p.cm)} = ${N(p.fc+p.profit)} ÷ ${N(p.cm)} = <b>${N(p.tpU)}</b> وحدة`},
+   {lab:"هامش الأمان (٪)", ans:p.mos, pts:20, u:"%", pct:true,
+    q:`مبيعات ${p.name} الفعلية ${N(p.actual)} وحدة، ونقطة التعادل ${N(p.beU)} وحدة. كم هامش الأمان (٪)؟`,
+    w:`هامش الأمان = (الفعلية − التعادل) ÷ الفعلية = (${N(p.actual)} − ${N(p.beU)}) ÷ ${N(p.actual)} = ${N(p.actual-p.beU)} ÷ ${N(p.actual)} = <b>${p.mos}%</b>`}
+  ];
+}
+function tpCheck(){
+  const g=S.g, sp=tpSpecs()[g.step];
+  const v=parseFloat(String(g.val).replace(/[,\s%]/g,""));
+  if(isNaN(v)){ g.warn="اكتب رقماً."; return draw(); }
+  g.warn=null;
+  const ok=Math.abs(v-sp.ans) < (sp.pct?0.05:0.5); mark(ok); if(ok) addScore(sp.pts);
+  if(!ok) logErr(sp.lab, (sp.pct?sp.ans+"%":N(sp.ans)+" "+sp.u), (sp.pct?v:N(v))+"", sp.w.replace(/<[^>]+>/g,""));
+  g.fb={ok, ans:(sp.pct?sp.ans+"%":N(sp.ans)+" "+sp.u), work:sp.w};
+  draw();
+}
+function tpNext(){
+  const g=S.g; g.fb=null; g.val=""; g.warn=null; g.step++;
+  if(g.step>2){
+    g.solved++; g.step=0;
+    if(S.mode==="teams"){ nextTurn(); if(S.qDone>=S.teamQ) return finish(); }
+    else if(g.solved>=g.target) return finish();
+    g.p=makeTP();
+  }
+  draw();
+}
+function tpView(){
+  const g=S.g, all=tpSpecs(), sp=all[g.step];
+  return `${hud([S.mode==="teams"?"💰 مسألة":"💰 مسألة "+(g.solved+1)+" / "+g.target])}
+    <div class="gm-steps">${all.map((x,i)=>`<div class="gm-step ${i===g.step?"on":i<g.step?"done":""}">${i+1}. ${x.lab}</div>`).join("")}</div>
+    <div class="gm-card">
+      <div class="gm-eq">وحدات الربح المستهدف = (الثابتة + الربح) ÷ هامش المساهمة</div>
+      <h3 class="gm-q">${E(sp.q)}</h3>
+      <input class="gm-num" inputmode="decimal" placeholder="اكتب الرقم (${E(sp.u)})" value="${E(g.val)}"
+        oninput="GM.tpInput(this.value)" onkeydown="if(event.key==='Enter')GM.tpCheck()" ${g.fb?"disabled":""}>
+      ${g.warn?`<div class="gm-fb no">${E(g.warn)}</div>`:""}
+      ${g.fb?fbBox(g.fb.ok, g.fb.ans, null, g.fb.work):""}
+      <div class="gm-actions">${g.fb
+        ?`<button class="gm-btn p" onclick="GM.tpNext()">${g.step>=2?"مسألة جديدة ←":"الخطوة التالية ←"}</button>`
+        :`<button class="gm-btn p" onclick="GM.tpCheck()">تحقّق</button>`}</div>
+    </div>`;
+}
+
+/* ============================================================
+   و٤ – ٣) اتجاه التغيّر (تحليل الحساسية) — اختيار
+   ============================================================ */
+function sensStart(one){
+  const all=sh(GM_SENS.concat(GM_CVP_CONCEPT).map(q=>({q:q.q, opts:q.o.slice(), ans:q.o[q.c], why:q.why})));
+  S.g={ qs: one?[all[0]] : all.slice(0, S.mode==="teams"?S.teamQ:12), i:0, score:0,right:0,wrong:0, fb:null, picked:null };
+}
+function sensAnswer(v){
+  const g=S.g; if(g.fb) return;
+  const q=g.qs[g.i], ok=v===q.ans; g.picked=v; mark(ok);
+  if(ok) addScore(12); else logErr(q.q, q.ans, v, q.why);
+  g.fb={ok,ans:q.ans,why:q.why}; draw();
+}
+function sensNext(){
+  const g=S.g; g.fb=null; g.picked=null;
+  if(advance()) return;
+  g.i++; if(g.i>=g.qs.length) return finish();
+  draw();
+}
+function sensView(){
+  const g=S.g,q=g.qs[g.i];
+  return `${hud(["⚖️ "+(g.i+1)+(S.mixed?"":" / "+g.qs.length)])}
+    <div class="gm-card"><h3 class="gm-q">${E(q.q)}</h3>
+      ${opts(q.opts,g.fb,q.ans,g.picked,"GM.sensAnswer")}
+      ${g.fb?fbBox(g.fb.ok,g.fb.ans,g.fb.why)+nextBtn("GM.sensNext()"):""}</div>`;
+}
+
+/* ============================================================
+   و٤ – ٤) اقرأ خريطة التعادل — اختيار
+   ============================================================ */
+function cvpSvg(highlight){
+  const x0=52,x1=384,y0=208,y1=14;
+  const ax=`<line x1="${x0}" y1="${y1}" x2="${x0}" y2="${y0}" stroke="#94a3b8" stroke-width="1.6"/>
+            <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="#94a3b8" stroke-width="1.6"/>`;
+  const lab=`<text x="${(x0+x1)/2}" y="240" text-anchor="middle" font-size="12" fill="#64748b">حجم المبيعات</text>
+             <text x="14" y="111" text-anchor="middle" font-size="12" fill="#64748b" transform="rotate(-90 14 111)">ريال</text>`;
+  const fcY=y0-(y0-y1)*0.30;                 // خط التكاليف الثابتة (أفقي)
+  const bx=x0+(x1-x0)*0.52, by=y0-(y0-y1)*0.56;  // نقطة التعادل (تقاطع)
+  // خط التكاليف الكلية: يبدأ من fcY ويمر بنقطة التعادل ويكمل
+  const totEndY=y0-(y0-y1)*0.74;
+  // خط الإيرادات: من الأصل عبر نقطة التعادل ويكمل أعلى
+  const revEndY=y0-(y0-y1)*0.92;
+  const hl=c=>highlight===c?' stroke-width="4.5"':' stroke-width="2.6"';
+  const dim=c=>highlight&&highlight!==c?' opacity="0.28"':'';
+  // مناطق الربح/الخسارة
+  let regions="";
+  if(highlight==="profit") regions=`<path d="M ${bx} ${by} L ${x1-6} ${totEndY} L ${x1-6} ${revEndY} Z" fill="#bbf7d0" opacity="0.8"/>`;
+  if(highlight==="loss")   regions=`<path d="M ${x0} ${fcY} L ${bx} ${by} L ${x0} ${y0} Z" fill="#fecaca" opacity="0.8"/>`;
+  return `<svg viewBox="0 0 400 250" role="img">${regions}${ax}
+    <line x1="${x0}" y1="${fcY}" x2="${x1}" y2="${fcY}" stroke="#b45309"${hl("fixed")}${dim("fixed")}/>
+    <line x1="${x0}" y1="${fcY}" x2="${x1-6}" y2="${totEndY}" stroke="#dc2626"${hl("total")}${dim("total")}/>
+    <line x1="${x0}" y1="${y0}" x2="${x1-6}" y2="${revEndY}" stroke="#047857"${hl("revenue")}${dim("revenue")}/>
+    ${highlight==="be"?`<circle cx="${bx}" cy="${by}" r="7" fill="none" stroke="#0f172a" stroke-width="3"/>`:`<circle cx="${bx}" cy="${by}" r="3.5" fill="#0f172a"/>`}
+    ${lab}</svg>`;
+}
+function cvpQs(){
+  const qs=[], labelOf={}; GM_CVP_CHART.forEach(x=>labelOf[x.type]=x.label);
+  GM_CVP_CHART.forEach(c=>{
+    const others=sh(GM_CVP_CHART.filter(x=>x.type!==c.type)).slice(0,3);
+    qs.push({kind:"naming", type:c.type, q:"ما الذي يُميَّز على خريطة التعادل؟",
+      opts:sh([c].concat(others)).map(x=>x.label), ans:c.label, why:c.why});
+  });
+  return qs;
+}
+function cvpStart(one){
+  const all=sh(cvpQs());
+  S.g={ qs: one?[all[0]] : all.slice(0, S.mode==="teams"?S.teamQ:8), i:0, score:0,right:0,wrong:0, fb:null, picked:null };
+}
+function cvpAnswer(v){
+  const g=S.g; if(g.fb) return;
+  const q=g.qs[g.i], ok=v===q.ans; g.picked=v; mark(ok);
+  if(ok) addScore(15); else logErr(q.q+" ("+q.ans+")", q.ans, v, q.why);
+  g.fb={ok, why:q.why, ans:q.ans}; draw();
+}
+function cvpNext(){
+  const g=S.g; g.fb=null; g.picked=null;
+  if(advance()) return;
+  g.i++; if(g.i>=g.qs.length) return finish();
+  draw();
+}
+function cvpView(){
+  const g=S.g,q=g.qs[g.i];
+  return `${hud(["📈 "+(g.i+1)+(S.mixed?"":" / "+g.qs.length)])}
+    <div class="gm-card"><h3 class="gm-q">${E(q.q)}</h3>
+      <div class="gm-chart">${cvpSvg(q.type)}</div>
+      ${opts(q.opts,g.fb,q.ans,g.picked,"GM.cvpAnswer")}
+      ${g.fb?fbBox(g.fb.ok,g.fb.ans,g.fb.why)+nextBtn("GM.cvpNext()"):""}</div>`;
+}
+
+/* ============================================================
    تحدٍّ شامل
    ============================================================ */
 const STARTERS={ sort:sortStart, charts:chartsStart, highlow:hlStart, factory:facStart,
                  matrix:matrixStart, func:funcStart, cmp:cmpStart, stmt:stmtStart,
-                 jvp:jvpStart, doc:docStart, entry:entryStart, oh:ohStart };
+                 jvp:jvpStart, doc:docStart, entry:entryStart, oh:ohStart,
+                 be:beStart, target:tpStart, sens:sensStart, cvp:cvpStart };
 const VIEWS={ sort:sortView, charts:chartsView, highlow:hlView, factory:facView,
               matrix:matrixView, func:funcView, cmp:cmpView, stmt:stmtView,
-              jvp:jvpView, doc:docView, entry:entryView, oh:ohView };
+              jvp:jvpView, doc:docView, entry:entryView, oh:ohView,
+              be:beView, target:tpView, sens:sensView, cvp:cvpView };
 function mixPool(){
   const out=[];
   unitIds().forEach(u=> Object.keys(UNITS_DEF[u].games).forEach(g=>{ if(ONESHOT[g]) out.push(g); }));
@@ -2111,7 +2424,9 @@ return { open, close, home, play, quit, setUnit, setMode, setQ, toggleBig, teamN
   matrixAnswer, matrixNext, funcAnswer, funcNext, cmpAnswer, cmpNext,
   stmtPick, stmtUndo, stmtCheckOrder, stmtInput, stmtCheck, stmtNext,
   jvpAnswer, jvpNext, docAnswer, docNext, entryAnswer, entryNext,
-  ohInput, ohCheck, ohDir, ohTreat, ohNext };
+  ohInput, ohCheck, ohDir, ohTreat, ohNext,
+  beInput, beCheck, beNext, tpInput, tpCheck, tpNext,
+  sensAnswer, sensNext, cvpAnswer, cvpNext };
 })();
 
 </script>
@@ -4342,8 +4657,8 @@ const GUIDE = [
    "صح وخطأ: حدّد صحة كل عبارة ويظهر التصحيح مع شرح موجز للعبارات التي لها شرح.",
    "أسئلة مقالية: حاول الإجابة ذهنياً أو كتابةً ثم اضغط «👁️ إظهار الإجابة» لكشف نموذج الإجابة، أو «إظهار كل الإجابات» لكشفها دفعة واحدة."
  ]},
- { id:"g10", icon:"🎮", title:"ألعاب المقرر (الوحدات الأولى والثانية والثالثة)", paras:[
-   "زر «🎮 العب وتعلّم» داخل صفحات الوحدات الأولى والثانية والثالثة (وزر «🎮 ألعاب المقرر» في الصفحة الرئيسية) يفتح اثنتي عشرة لعبة تدريبية، أربعاً لكل وحدة، إضافة إلى وضع «تحدٍّ شامل».",
+ { id:"g10", icon:"🎮", title:"ألعاب المقرر (الوحدات الأربع)", paras:[
+   "زر «🎮 العب وتعلّم» داخل صفحات الوحدات الأربع (وزر «🎮 ألعاب المقرر» في الصفحة الرئيسية) يفتح ست عشرة لعبة تدريبية، أربعاً لكل وحدة، إضافة إلى وضع «تحدٍّ شامل».",
    "ألعاب الوحدة الأولى — مفهوم التكاليف وتبويباتها:"
  ], steps:[
    "🎯 مصفوفة التبويب: يظهر بند تكلفة وتضعه في تقاطعه الصحيح من ست خانات — مواد أم عمل أم خدمات × مباشرة أم غير مباشرة. هذا التقاطع هو أساس بناء قوائم التكاليف.",
@@ -4353,7 +4668,8 @@ const GUIDE = [
  ], paras2:[
    "ألعاب الوحدة الثانية — سلوك التكاليف: 🗂️ فرز التكاليف (ثابتة/متغيرة/مختلطة بمؤقت وأرواح وسلاسل)، 📈 اقرأ الرسم البياني (يكسر الخلط بين إجمالي التكلفة وتكلفة الوحدة)، 🧮 تحدي أعلى وأدنى مستوى (أربع خطوات مصحّحة على جدول جديد كل مرة)، 🏭 مصنع تحت إدارتك (حساب التكاليف والتسعير وقرار الطلبية الإضافية).",
    "ألعاب الوحدة الثالثة — نظام تكاليف الأوامر: 🔀 الأوامر أم المراحل؟ (تحديد النظام المناسب لكل منشأة)، 🧾 المستند الصحيح (قائمة تكاليف الأمر أم إذن صرف المواد أم بطاقة العمل)، ⚖️ قيد اليومية (اختيار القيد الصحيح — مَن المدين ومَن الدائن في الحسابات السبعة)، 🏭 تحميل التكاليف والفرق (حساب ت.ص.غ.م المحمَّلة بالمعدل التقديري ثم فرق التحميل واتجاهه ومعالجته).",
-   "🔀 تحدٍّ شامل: يسحب أسئلة عشوائية من كل الألعاب ذات السؤال الواحد في الوحدات الثلاث — مناسب للمراجعة قبل الاختبار وللمسابقة الصفية.",
+   "ألعاب الوحدة الرابعة — تحليل التكلفة والحجم والربح: 🎯 آلة حاسبة التعادل (هامش المساهمة ونقطة التعادل بالوحدات والقيمة)، 💰 الربح المستهدف وهامش الأمان (الوحدات اللازمة لربح مستهدف ثم هامش الأمان ٪)، ⚖️ اتجاه التغيّر (توقّع أثر تغيّر السعر أو التكلفة أو الثابتة على الهامش والتعادل)، 📈 اقرأ خريطة التعادل (تحديد نقطة التعادل ومناطق الربح والخسارة على الرسم).",
+   "🔀 تحدٍّ شامل: يسحب أسئلة عشوائية من كل الألعاب ذات السؤال الواحد في الوحدات الأربع — مناسب للمراجعة قبل الاختبار وللمسابقة الصفية.",
    "في كل لعبة تظهر الإجابة النموذجية وتعليلها، ومع الأسئلة الحسابية يظهر الحل خطوة بخطوة. وينتهي الوضع الفردي بتقرير يجمع أخطاءك وتعليل كل منها، مع حفظ أفضل نتيجة لكل لعبة.",
    "وضع الفرق: ٢ إلى ٤ فرق بأسمائها وعدد أسئلة تختاره، تتناوب الأدوار مع لوحة نتائج مباشرة، وزر «🔎 خط كبير» ليُقرأ من آخر القاعة عبر جهاز العرض. ومفتاح Esc يُنهي الجولة أو يغلق اللعبة."
  ]},
@@ -4466,7 +4782,7 @@ function renderHome(){
       <button class="btn btn-out" onclick="printFullCurriculum()">🖨️ تصدير المنهج الكامل PDF</button>
       <button class="btn btn-out" onclick="goto('#/map')">🗺️ خريطة المنهج الكاملة</button>
       <button class="btn btn-out" onclick="goto('#/glossary')">§ مسرد المصطلحات</button>
-      <button class="btn btn-game" onclick="GM.open()">🎮 ألعاب المقرر (الوحدات الأولى والثانية والثالثة)</button>
+      <button class="btn btn-game" onclick="GM.open()">🎮 ألعاب المقرر (الوحدات الأربع)</button>
     </div>
 
     <h2 class="sec-title">وحدات المقرر</h2>
@@ -4491,7 +4807,7 @@ function renderHome(){
             <button class="btn btn-em btn-sm" onclick="goto('#/unit/${u.id}')">فتح الوحدة</button>
             <button class="btn btn-ghost btn-sm" onclick="openPptx('${u.id}')">📽️ PPTX</button>
             <button class="btn btn-ghost btn-sm" onclick="printUnit('${u.id}')">🖨️ PDF</button>
-            ${(u.id==="u1"||u.id==="u2"||u.id==="u3")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب</button>`:""}
+            ${(u.id==="u1"||u.id==="u2"||u.id==="u3"||u.id==="u4")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب</button>`:""}
           </div>
         </div>`;
       }).join("")}
@@ -4562,7 +4878,7 @@ function renderUnit(u){
       <button class="btn btn-em btn-sm" onclick="openPres('${u.id}')">📖 عرض الوحدة تقديمياً</button>
       <button class="btn btn-out btn-sm" onclick="openPptx('${u.id}')">📽️ تصدير PPTX</button>
       <button class="btn btn-out btn-sm" onclick="printUnit('${u.id}')">🖨️ تحميل الوحدة PDF</button>
-      ${(u.id==="u1"||u.id==="u2"||u.id==="u3")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب وتعلّم</button>`:""}
+      ${(u.id==="u1"||u.id==="u2"||u.id==="u3"||u.id==="u4")?`<button class="btn btn-game btn-sm" onclick="GM.open({unit:'${u.id}'})">🎮 العب وتعلّم</button>`:""}
     </div>
 
     <div class="obj">
