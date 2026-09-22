@@ -647,6 +647,25 @@ textarea.inp{min-height:74px;resize:vertical;line-height:1.8}
   .gm-mr{font-size:.85em;padding:4px 7px;min-width:56px}
 }
 
+
+/* ---- بطاقة رابط تطبيق الطلاب ---- */
+.share-card{margin-top:22px;border-radius:18px;padding:22px 24px;color:#fff;
+  background:linear-gradient(135deg,#16223A 0%,#0E6B57 100%);box-shadow:0 14px 34px -18px rgba(22,34,58,.6)}
+.share-card .sc-head{display:flex;gap:14px;align-items:flex-start}
+.share-card .sc-ic{flex:none;width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:26px}
+.share-card h2{margin:0 0 4px;font-size:21px;font-weight:900;color:#fff;line-height:1.5}
+.share-card p{margin:0;color:#D5E6E0;font-size:14.5px;line-height:1.8}
+.share-card .sc-link{margin:16px 0 14px;background:#fff;border-radius:10px;padding:10px 14px;text-align:left;overflow-x:auto;white-space:nowrap}
+.share-card .sc-link a{color:#0E6B57;font-weight:800;font-size:15.5px;text-decoration:underline}
+.share-card .sc-btns{display:flex;flex-wrap:wrap;gap:8px}
+.share-card .sc-b{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;padding:9px 16px;
+  font-weight:800;font-size:14.5px;color:#fff;text-decoration:none;cursor:pointer;font-family:inherit}
+.share-card .sc-b.wa{background:#1FA855}.share-card .sc-b.tg{background:#229ED9}
+.share-card .sc-b.sms{background:#6D5BD0}.share-card .sc-b.cp{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35)}
+.share-card .sc-b.op{background:#F2C35B;color:#16223A}
+.share-card .sc-b.ok{background:#fff;color:#0E6B57}
+.share-card .sc-b:hover{filter:brightness(1.08)}
+@media (max-width:640px){.share-card{padding:18px 16px}.share-card h2{font-size:18px}.share-card .sc-b{flex:1 1 44%}}
 </style>
 </head>
 <body>
@@ -5258,6 +5277,23 @@ function pitchHtml(){
 }
 
 /* ---- الرئيسية ---- */
+/* ---- رابط تطبيق الطلاب ومشاركته ---- */
+const STUDENT_APP_URL = "https://kmasskmass-svg.github.io/CostAccountingStudent/";
+const STUDENT_APP_MSG = "تطبيق مراجعة محاسبة التكاليف للطلاب (تدرّب والعب): أسئلة مراجعة للوحدات الخمس وألعاب تعليمية، مع طباعة الأسئلة PDF أو Word.\n" + STUDENT_APP_URL;
+function shareHref(k){
+  const m = encodeURIComponent(STUDENT_APP_MSG), u = encodeURIComponent(STUDENT_APP_URL);
+  if(k==="wa")  return "https://wa.me/?text="+m;
+  if(k==="tg")  return "https://t.me/share/url?url="+u+"&text="+encodeURIComponent("تطبيق مراجعة محاسبة التكاليف للطلاب (تدرّب والعب)");
+  if(k==="sms") return "sms:?&body="+m;
+  return STUDENT_APP_URL;
+}
+function copyStudentLink(btn, full){
+  const txt = full ? STUDENT_APP_MSG : STUDENT_APP_URL;
+  const done = ()=>{ const o=btn.textContent; btn.textContent="✓ تم النسخ"; btn.classList.add("ok"); setTimeout(()=>{ btn.textContent=o; btn.classList.remove("ok"); },1800); };
+  const fallback = ()=>{ const t=document.createElement("textarea"); t.value=txt; t.style.position="fixed"; t.style.opacity="0";
+    document.body.appendChild(t); t.select(); try{ document.execCommand("copy"); done(); }catch(e){ prompt("انسخ الرابط:", txt); } t.remove(); };
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, fallback); else fallback();
+}
 function renderHome(){
   const totalSecs = UNITS.reduce((a,u)=>a+u.sections.length,0);
   const totalQ = UNITS.reduce((a,u)=>a+totalQs(u.id),0);
@@ -5283,6 +5319,27 @@ function renderHome(){
       <button class="btn btn-out" onclick="goto('#/map')">🗺️ خريطة المنهج الكاملة</button>
       <button class="btn btn-out" onclick="goto('#/glossary')">§ مسرد المصطلحات</button>
       <button class="btn btn-game" onclick="GM.open()">🎮 ألعاب المقرر (المقرر كامل — 5 وحدات)</button>
+    </div>
+
+    <div class="share-card">
+      <div class="sc-head">
+        <div class="sc-ic">🎓</div>
+        <div style="min-width:0">
+          <h2>رابط تطبيق الطلاب: تدرّب والعب</h2>
+          <p>أرسل هذا الرابط لطلابك ليراجعوا أسئلة المقرر ويلعبوا ألعاب الوحدات من الجوال أو الحاسب.</p>
+        </div>
+      </div>
+      <div class="sc-link" dir="ltr">
+        <a href="${STUDENT_APP_URL}" target="_blank" rel="noopener">${STUDENT_APP_URL}</a>
+      </div>
+      <div class="sc-btns">
+        <a class="sc-b wa" href="${shareHref('wa')}" target="_blank" rel="noopener">واتساب</a>
+        <a class="sc-b tg" href="${shareHref('tg')}" target="_blank" rel="noopener">تيليجرام</a>
+        <a class="sc-b sms" href="${shareHref('sms')}">رسالة نصية</a>
+        <button class="sc-b cp" onclick="copyStudentLink(this)">نسخ الرابط</button>
+        <button class="sc-b cp" onclick="copyStudentLink(this,true)">نسخ الرسالة كاملة</button>
+        <a class="sc-b op" href="${STUDENT_APP_URL}" target="_blank" rel="noopener">فتح التطبيق</a>
+      </div>
     </div>
 
     <h2 class="sec-title">وحدات المقرر</h2>
