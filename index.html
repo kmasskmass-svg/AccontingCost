@@ -4185,6 +4185,217 @@ function printUnit(unitId){
 }
 
 /* ============================================================
+   5-ب) بنك أسئلة ألعاب المقرر للاختبار
+   يُبنى تلقائياً من بنوك محتوى الألعاب نفسها (GM_*) فتبقى الإجابة
+   الصحيحة مطابقة لما تعتمده اللعبة، مع أسئلة حسابية بأرقام ثابتة
+   تُحسب إجاباتها برمجياً.
+   ============================================================ */
+const GAME_EXAM_BANK = (function(){
+  const B = { u1:[], u2:[], u3:[], u4:[], u5:[] };
+  const fmt = (n)=>Number(n).toLocaleString("en-US");
+  const add = (u, q, options, correct, game, why)=>{
+    if(!options || correct<0 || correct>=options.length) return;
+    if(new Set(options).size!==options.length) return;          // لا خيارات مكررة
+    B[u].push({ q, options, correct, src:"game", game, why: why||"" });
+  };
+  // تدوير الخيارات لتوزيع موضع الإجابة الصحيحة دون عشوائية (ثابت بين الجلسات)
+  const rot = (opts, correct, k)=>{
+    const n=opts.length; k=((k%n)+n)%n;
+    const o=opts.map((_,i)=>opts[(i+k)%n]);
+    return { options:o, correct:((correct-k)%n+n)%n };
+  };
+  const cls = (u, arr, stem, labels, map, game, skip)=>{
+    (arr||[]).forEach(it=>{
+      if(skip && skip(it)) return;
+      const c = map[it.k]; if(c===undefined) return;
+      add(u, stem.replace("{t}", it.t), labels.slice(), c, game, it.why);
+    });
+  };
+  const mcq = (u, arr, game)=>{
+    (arr||[]).forEach(x=> add(u, x.q, x.o.slice(), x.c, game, x.why));
+  };
+
+  /* ---------------- الوحدة الأولى ---------------- */
+  if((typeof GM_MATRIX!=="undefined")){
+    const L=["مواد مباشرة","مواد غير مباشرة","أجور (عمل) مباشرة","أجور (عمل) غير مباشرة","خدمات مباشرة","خدمات غير مباشرة"];
+    const base={mat:0,lab:2,srv:4};
+    GM_MATRIX.forEach(it=>{
+      const c = base[it.n] + (it.d==="i"?1:0);
+      add("u1", `وفق التبويب الطبيعي وعلاقة البند بالمنتج، يُصنَّف البند «${it.t}» على أنه:`, L.slice(), c, "matrix", it.why);
+    });
+  }
+  if((typeof GM_FUNC!=="undefined")) cls("u1", GM_FUNC, "وفق التبويب الوظيفي، يُصنَّف البند «{t}» ضمن:",
+    ["التكاليف الصناعية (الإنتاجية)","التكاليف التسويقية (البيعية)","التكاليف الإدارية"], {p:0,s:1,a:2}, "func");
+  if((typeof GM_COMPARE!=="undefined")) cls("u1", GM_COMPARE, "العبارة «{t}» من خصائص:",
+    ["المحاسبة المالية","محاسبة التكاليف"], {fin:0,cost:1}, "cmp");
+  if((typeof GM_INDCOM!=="undefined")) cls("u1", GM_INDCOM, "البند «{t}» يظهر في حسابات وقوائم:",
+    ["المنشأة الصناعية فقط","المنشأة التجارية فقط","المنشأة الصناعية والتجارية معاً"], {ind:0,com:1,both:2}, "cmp");
+  if((typeof GM_STMT_LINES!=="undefined")){
+    const clean = s=>s.replace(/^[+=−-]\s*/,"");
+    const lines = GM_STMT_LINES.map(l=>clean(l.t));
+    for(let i=0;i<lines.length-1;i++){
+      const right = lines[i+1];
+      const others = lines.filter((x,j)=>j!==i && j!==i+1);
+      const d = [others[(i)%others.length], others[(i+2)%others.length], others[(i+4)%others.length]];
+      const opts = [right].concat(d.filter((x,k,a)=>a.indexOf(x)===k && x!==right));
+      if(opts.length<3) continue;
+      const r = rot(opts, 0, i);
+      add("u1", `في قائمة تكلفة الإنتاج، ما البند الذي يأتي مباشرة بعد «${lines[i]}»؟`, r.options, r.correct, "stmt",
+        "الترتيب: مواد مباشرة + أجور مباشرة + ت.ص.غ.م = إجمالي تكاليف التصنيع + تحت التشغيل أول المدة − تحت التشغيل آخر المدة = تكلفة الإنتاج التام.");
+    }
+  }
+  // حسابية — قائمة تكلفة الإنتاج (أرقام ثابتة)
+  (function(){
+    const dm=120000, dl=80000, oh=50000, wipB=20000, wipE=30000, fgB=40000, fgE=25000;
+    const tmc=dm+dl+oh, cogm=tmc+wipB-wipE, cogs=cogm+fgB-fgE;
+    const data=`مواد مباشرة مستخدمة ${fmt(dm)} ريال، أجور مباشرة ${fmt(dl)} ريال، تكاليف صناعية غير مباشرة ${fmt(oh)} ريال، مخزون تحت التشغيل أول المدة ${fmt(wipB)} ريال وآخر المدة ${fmt(wipE)} ريال`;
+    let r=rot([`${fmt(tmc)} ريال`,`${fmt(dm+dl)} ريال`,`${fmt(tmc+wipB)} ريال`,`${fmt(cogm)} ريال`],0,1);
+    add("u1", `${data}. إجمالي تكاليف التصنيع يساوي:`, r.options, r.correct, "stmt",
+      `إجمالي تكاليف التصنيع = ${fmt(dm)} + ${fmt(dl)} + ${fmt(oh)} = ${fmt(tmc)} ريال.`);
+    r=rot([`${fmt(cogm)} ريال`,`${fmt(tmc)} ريال`,`${fmt(tmc-wipB+wipE)} ريال`,`${fmt(tmc+wipB+wipE)} ريال`],0,2);
+    add("u1", `${data}. تكلفة الإنتاج التام خلال الفترة تساوي:`, r.options, r.correct, "stmt",
+      `تكلفة الإنتاج التام = ${fmt(tmc)} + ${fmt(wipB)} − ${fmt(wipE)} = ${fmt(cogm)} ريال.`);
+    r=rot([`${fmt(cogs)} ريال`,`${fmt(cogm)} ريال`,`${fmt(cogm-fgB+fgE)} ريال`,`${fmt(cogm+fgB+fgE)} ريال`],0,3);
+    add("u1", `إذا كانت تكلفة الإنتاج التام ${fmt(cogm)} ريال، ومخزون الإنتاج التام أول المدة ${fmt(fgB)} ريال وآخر المدة ${fmt(fgE)} ريال، فإن تكلفة البضاعة المباعة تساوي:`,
+      r.options, r.correct, "stmt", `تكلفة البضاعة المباعة = ${fmt(cogm)} + ${fmt(fgB)} − ${fmt(fgE)} = ${fmt(cogs)} ريال.`);
+  })();
+
+  /* ---------------- الوحدة الثانية ---------------- */
+  if((typeof GM_ITEMS!=="undefined")) cls("u2", GM_ITEMS, "حسب سلوك التكلفة مع حجم النشاط، يُصنَّف البند «{t}» على أنه تكلفة:",
+    ["ثابتة","متغيرة","مختلطة (شبه متغيرة)"], {f:0,v:1,m:2}, "sort");
+  // اقرأ الرسم البياني — بصيغة نصية
+  (function(){
+    const L=["إجمالي التكاليف الثابتة","التكلفة الثابتة للوحدة","إجمالي التكاليف المتغيرة","التكلفة المتغيرة للوحدة","إجمالي التكاليف المختلطة"];
+    const Q=[
+      ["رسم بياني محوره الرأسي «إجمالي التكلفة» ومحوره الأفقي «حجم الإنتاج»، يظهر فيه خط أفقي موازٍ للمحور الأفقي. هذا الخط يمثل:",0,"إجمالي التكاليف الثابتة لا يتغير بتغير حجم الإنتاج في حدود المدى الملائم."],
+      ["رسم بياني محوره الرأسي «تكلفة الوحدة»، يظهر فيه منحنى هابط يقترب من المحور الأفقي كلما زاد الإنتاج. هذا المنحنى يمثل:",1,"المبلغ الثابت يُقسَّم على عدد أكبر من الوحدات فينخفض نصيب الوحدة."],
+      ["رسم بياني محوره الرأسي «إجمالي التكلفة»، يظهر فيه خط صاعد يبدأ من نقطة الأصل. هذا الخط يمثل:",2,"عند إنتاج صفر لا توجد تكلفة متغيرة، ثم يزيد الإجمالي طردياً مع الإنتاج."],
+      ["رسم بياني محوره الرأسي «تكلفة الوحدة»، يظهر فيه خط أفقي موازٍ للمحور الأفقي. هذا الخط يمثل:",3,"نصيب الوحدة من التكلفة المتغيرة ثابت لأن الإجمالي يتغير بنفس نسبة تغير الكمية."],
+      ["رسم بياني محوره الرأسي «إجمالي التكلفة»، يظهر فيه خط صاعد يقطع المحور الرأسي عند قيمة موجبة. هذا الخط يمثل:",4,"نقطة التقاطع مع المحور الرأسي هي الجزء الثابت (أ)، والميل هو التكلفة المتغيرة للوحدة (ب)."]
+    ];
+    Q.forEach(x=>add("u2", x[0], L.slice(), x[1], "charts", x[2]));
+  })();
+  if((typeof GM_CONCEPTS!=="undefined")) mcq("u2", GM_CONCEPTS, "factory");
+  // حسابية — أعلى وأدنى مستوى
+  (function(){
+    const a=21000, b=20, lo=2000, hi=3000, loC=a+b*lo, hiC=a+b*hi, nx=3500, pred=a+b*nx;
+    const data=`بلغت تكاليف الصيانة ${fmt(loC)} ريال عند أدنى مستوى نشاط (${fmt(lo)} ساعة تشغيل)، و${fmt(hiC)} ريال عند أعلى مستوى نشاط (${fmt(hi)} ساعة تشغيل)`;
+    let r=rot([`${b} ريالاً للساعة`,`${Math.round(hiC/hi*100)/100} ريال للساعة`,`${Math.round(loC/lo*100)/100} ريال للساعة`,`${fmt(hiC-loC)} ريال للساعة`],0,1);
+    add("u2", `${data}. باستخدام طريقة أعلى وأدنى مستوى، التكلفة المتغيرة للساعة (ب) تساوي:`, r.options, r.correct, "highlow",
+      `ب = (${fmt(hiC)} − ${fmt(loC)}) ÷ (${fmt(hi)} − ${fmt(lo)}) = ${fmt(hiC-loC)} ÷ ${fmt(hi-lo)} = ${b} ريالاً للساعة.`);
+    r=rot([`${fmt(a)} ريال`,`${fmt(hiC-loC)} ريال`,`${fmt(loC)} ريال`,`${fmt(b*hi)} ريال`],0,2);
+    add("u2", `${data}. باستخدام طريقة أعلى وأدنى مستوى، الجزء الثابت (أ) يساوي:`, r.options, r.correct, "highlow",
+      `أ = ${fmt(hiC)} − (${b} × ${fmt(hi)}) = ${fmt(a)} ريال.`);
+    r=rot([`${fmt(pred)} ريال`,`${fmt(b*nx)} ريال`,`${fmt(hiC)} ريال`,`${fmt(Math.round(hiC/hi*nx))} ريال`],0,3);
+    add("u2", `إذا كانت معادلة تكلفة الصيانة ص = ${fmt(a)} + ${b} س، فإن التكلفة المتوقعة عند ${fmt(nx)} ساعة تشغيل تساوي:`, r.options, r.correct, "highlow",
+      `ص = ${fmt(a)} + (${b} × ${fmt(nx)}) = ${fmt(pred)} ريال.`);
+    const fc=5000, u1=20, u2=100;
+    r=rot([`${fmt(fc/u1)} ريالاً`,`${fmt(fc/u2)} ريالاً`,`${fmt(fc)} ريال`,`${fmt(fc*u1)} ريال`],0,0);
+    add("u2", `تكاليف ثابتة إجماليها ${fmt(fc)} ريال، فإن نصيب الوحدة منها عند إنتاج ${u1} وحدة يساوي:`, r.options, r.correct, "charts",
+      `${fmt(fc)} ÷ ${u1} = ${fmt(fc/u1)} ريالاً للوحدة، وينخفض إلى ${fmt(fc/u2)} ريالاً عند إنتاج ${u2} وحدة.`);
+  })();
+
+  /* ---------------- الوحدة الثالثة ---------------- */
+  // استُبعد مثال «مصنع الأدوية» لأن الإنتاج بالدفعات قد يُعالَج بنظام الأوامر أيضاً، فلا يصلح سؤالَ اختبار قاطع الإجابة
+  if((typeof GM_JVP!=="undefined")) cls("u3", GM_JVP, "النظام الأنسب لحساب التكاليف في المنشأة التالية: «{t}» هو:",
+    ["نظام تكاليف الأوامر الإنتاجية","نظام تكاليف المراحل الإنتاجية"], {j:0,p:1}, "jvp", it=>/أدوية/.test(it.t));
+  if((typeof GM_DOC!=="undefined")) cls("u3", GM_DOC, "المستند الذي ينطبق عليه الوصف «{t}» هو:",
+    ["قائمة تكاليف الأمر","إذن صرف المواد","بطاقة العمل (بطاقة الوقت)"], {cost:0,req:1,tkt:2}, "doc");
+  if((typeof GM_ENTRIES!=="undefined") && (typeof GM_ACCOUNTS!=="undefined")){
+    const A=GM_ACCOUNTS, fmtE=(d,c)=>`من حـ/ ${A[d]} إلى حـ/ ${A[c]}`;
+    GM_ENTRIES.forEach((e,i)=>{
+      const right=fmtE(e.dr,e.cr);
+      const pool=[fmtE(e.cr,e.dr)];
+      for(let k=1;k<GM_ENTRIES.length && pool.length<3;k++){
+        const o=GM_ENTRIES[(i+k*2)%GM_ENTRIES.length], s=fmtE(o.dr,o.cr);
+        if(s!==right && pool.indexOf(s)<0 && !(o.dr===e.dr&&o.cr===e.cr)) pool.push(s);
+      }
+      const r=rot([right].concat(pool),0,i);
+      add("u3", `في نظام تكاليف الأوامر، القيد الصحيح للعملية «${e.ev}» هو:`, r.options, r.correct, "entry", e.why);
+    });
+  }
+  if((typeof GM_OH_TREAT!=="undefined")) mcq("u3", GM_OH_TREAT, "oh");
+  // حسابية — تحميل ت.ص.غ.م
+  (function(){
+    const eOH=300000, eH=60000, rate=eOH/eH, aH=58000, applied=rate*aH, actual=302000, diff=actual-applied;
+    let r=rot([`${rate} ريالات لكل ساعة`,`${Math.round(actual/aH*100)/100} ريال لكل ساعة`,`${Math.round(eOH/aH*100)/100} ريال لكل ساعة`,`${fmt(eH/1000)} ريال لكل ساعة`],0,1);
+    add("u3", `قُدّرت ت.ص.غ.م للفترة بمبلغ ${fmt(eOH)} ريال، وساعات العمل المباشرة المقدرة ${fmt(eH)} ساعة. معدل التحميل التقديري يساوي:`, r.options, r.correct, "oh",
+      `معدل التحميل = ${fmt(eOH)} ÷ ${fmt(eH)} = ${rate} ريالات لكل ساعة عمل مباشرة.`);
+    r=rot([`${fmt(applied)} ريال`,`${fmt(eOH)} ريال`,`${fmt(actual)} ريال`,`${fmt(rate*eH+rate*(eH-aH))} ريال`],0,2);
+    add("u3", `إذا كان معدل تحميل ت.ص.غ.م ${rate} ريالات لكل ساعة عمل مباشرة، وبلغت الساعات الفعلية ${fmt(aH)} ساعة، فإن ت.ص.غ.م المحمَّلة تساوي:`, r.options, r.correct, "oh",
+      `المحمَّلة = ${rate} × ${fmt(aH)} = ${fmt(applied)} ريال.`);
+    r=rot([`${fmt(diff)} ريال بالنقص (تحميل أقل)`,`${fmt(diff)} ريال بالزيادة (تحميل أكثر)`,`${fmt(actual-eOH)} ريال بالنقص (تحميل أقل)`,`${fmt(eOH-applied)} ريال بالزيادة (تحميل أكثر)`],0,3);
+    add("u3", `بلغت ت.ص.غ.م الفعلية ${fmt(actual)} ريال، والمحمَّلة ${fmt(applied)} ريال. فرق التحميل واتجاهه:`, r.options, r.correct, "oh",
+      `الفرق = ${fmt(actual)} − ${fmt(applied)} = ${fmt(diff)} ريال، والمحمَّل أقل من الفعلي فهو تحميل بالنقص.`);
+  })();
+
+  /* ---------------- الوحدة الرابعة ---------------- */
+  if((typeof GM_SENS!=="undefined")) mcq("u4", GM_SENS, "sens");
+  if((typeof GM_CVP_CONCEPT!=="undefined")) mcq("u4", GM_CVP_CONCEPT, "sens");
+  (function(){
+    const L=["نقطة التعادل","منطقة الربح","منطقة الخسارة","خط التكاليف الثابتة","خط التكاليف الكلية","خط الإيرادات الكلية"];
+    const Q=[
+      ["على خريطة التعادل، النقطة التي يتقاطع عندها خط الإيرادات الكلية مع خط التكاليف الكلية تمثل:",0,"عندها تتساوى الإيرادات الكلية مع التكاليف الكلية فتكون النتيجة صفراً."],
+      ["على خريطة التعادل، المنطقة الواقعة يمين نقطة التعادل حيث يعلو خط الإيرادات فوق خط التكاليف الكلية تمثل:",1,"الإيرادات أكبر من التكاليف الكلية فتتحقق الأرباح."],
+      ["على خريطة التعادل، المنطقة الواقعة يسار نقطة التعادل حيث يعلو خط التكاليف الكلية فوق خط الإيرادات تمثل:",2,"التكاليف الكلية أكبر من الإيرادات فتتحقق الخسائر."],
+      ["على خريطة التعادل، الخط الأفقي الموازي للمحور الأفقي يمثل:",3,"إجمالي التكاليف الثابتة لا يتغير بتغير حجم النشاط."],
+      ["على خريطة التعادل، الخط الذي يبدأ من مستوى التكاليف الثابتة على المحور الرأسي ثم يرتفع بميل التكلفة المتغيرة للوحدة هو:",4,"التكاليف الكلية = الثابتة + المتغيرة، فيبدأ من مستوى الثابتة."],
+      ["على خريطة التعادل، الخط الذي يبدأ من نقطة الأصل ويرتفع بميل سعر بيع الوحدة هو:",5,"لا إيراد عند صفر مبيعات، ويزيد الإيراد بمقدار سعر البيع لكل وحدة."]
+    ];
+    Q.forEach(x=>add("u4", x[0], L.slice(), x[1], "cvp", x[2]));
+  })();
+  // حسابية — التعادل والربح المستهدف وهامش الأمان
+  (function(){
+    const sp=150, vc=90, cm=sp-vc, fc=120000, beU=fc/cm, cmr=cm/sp*100, beV=beU*sp, tp=60000, tU=(fc+tp)/cm, act=2500, mos=(act-beU)/act*100;
+    const data=`سعر بيع الوحدة ${sp} ريالاً، والتكلفة المتغيرة للوحدة ${vc} ريالاً، والتكاليف الثابتة ${fmt(fc)} ريال`;
+    let r=rot([`${cm} ريالاً`,`${sp+vc} ريالاً`,`${fmt(fc/sp)} ريال`,`${vc} ريالاً`],0,1);
+    add("u4", `${data}. هامش المساهمة للوحدة يساوي:`, r.options, r.correct, "be", `هامش المساهمة = ${sp} − ${vc} = ${cm} ريالاً.`);
+    r=rot([`${fmt(beU)} وحدة`,`${fmt(fc/sp)} وحدة`,`${fmt(Math.round(fc/vc))} وحدة`,`${fmt(beU*2)} وحدة`],0,2);
+    add("u4", `${data}. نقطة التعادل بالوحدات تساوي:`, r.options, r.correct, "be", `نقطة التعادل = ${fmt(fc)} ÷ ${cm} = ${fmt(beU)} وحدة.`);
+    r=rot([`${cmr}٪`,`${100-cmr}٪`,`${Math.round(cm/vc*1000)/10}٪`,`${Math.round(vc/cm*1000)/10}٪`],0,3);
+    add("u4", `${data}. نسبة هامش المساهمة تساوي:`, r.options, r.correct, "be", `النسبة = ${cm} ÷ ${sp} = ${cmr}٪.`);
+    r=rot([`${fmt(beV)} ريال`,`${fmt(beU*vc)} ريال`,`${fmt(fc)} ريال`,`${fmt(Math.round(fc/(vc/sp)))} ريال`],0,0);
+    add("u4", `${data}. نقطة التعادل بالقيمة (بالريال) تساوي:`, r.options, r.correct, "be", `التعادل بالقيمة = ${fmt(fc)} ÷ ${cmr}٪ = ${fmt(beV)} ريال (= ${fmt(beU)} × ${sp}).`);
+    r=rot([`${fmt(tU)} وحدة`,`${fmt((fc-tp)/cm)} وحدة`,`${fmt(fc/cm)} وحدة`,`${fmt(Math.round((fc+tp)/sp))} وحدة`],0,1);
+    add("u4", `${data}. عدد الوحدات اللازم بيعها لتحقيق ربح مستهدف قدره ${fmt(tp)} ريال:`, r.options, r.correct, "target",
+      `الوحدات = (${fmt(fc)} + ${fmt(tp)}) ÷ ${cm} = ${fmt(tU)} وحدة.`);
+    r=rot([`${mos}٪`,`${Math.round((act-beU)/beU*1000)/10}٪`,`${100-mos}٪`,`${fmt(act-beU)}٪`],0,2);
+    add("u4", `إذا كانت نقطة التعادل ${fmt(beU)} وحدة والمبيعات الفعلية ${fmt(act)} وحدة، فإن نسبة هامش الأمان تساوي:`, r.options, r.correct, "target",
+      `هامش الأمان = (${fmt(act)} − ${fmt(beU)}) ÷ ${fmt(act)} = ${mos}٪.`);
+  })();
+
+  /* ---------------- الوحدة الخامسة ---------------- */
+  if((typeof GM_VARKIND!=="undefined")) cls("u5", GM_VARKIND, "الانحراف الناتج عن «{t}» هو:",
+    ["انحراف سعر","انحراف كفاءة (كمية)"], {p:0,e:1}, "vkind");
+  if((typeof GM_FAV!=="undefined")) cls("u5", GM_FAV, "اتجاه الانحراف في الحالة التالية: «{t}» هو انحراف:",
+    ["مواتٍ (في صالح المنشأة)","غير مواتٍ (في غير صالح المنشأة)"], {f:0,u:1}, "fav");
+  if((typeof GM_STD_CONCEPT!=="undefined")) mcq("u5", GM_STD_CONCEPT, "std");
+  // حسابية — انحرافات المواد والأجور
+  (function(){
+    const V=(nm,unit,lbl,sp,ap,aq,sq,k)=>{
+      const pv=(ap-sp)*aq, ev=(aq-sq)*sp, tv=pv+ev;
+      const dir=v=>v>0?"غير مواتٍ":"مواتٍ", A=v=>fmt(Math.abs(v));
+      const data=`${lbl} المعياري ${sp} ريال، والفعلي ${ap} ريال، والكمية الفعلية ${fmt(aq)} ${unit}، والكمية المعيارية المسموح بها ${fmt(sq)} ${unit} (${nm})`;
+      let r=rot([`${A(pv)} ريال ${dir(pv)}`,`${A(pv)} ريال ${dir(-pv)}`,`${A((ap-sp)*sq)} ريال ${dir(pv)}`,`${A(ev)} ريال ${dir(ev)}`],0,k);
+      add("u5", `${data}. انحراف السعر يساوي:`, r.options, r.correct, "varc",
+        `انحراف السعر = (${ap} − ${sp}) × ${fmt(aq)} = ${A(pv)} ريال ${dir(pv)}.`);
+      r=rot([`${A(ev)} ريال ${dir(ev)}`,`${A(ev)} ريال ${dir(-ev)}`,`${A((aq-sq)*ap)} ريال ${dir(ev)}`,`${A(pv)} ريال ${dir(pv)}`],0,k+1);
+      add("u5", `${data}. انحراف الكفاءة (الكمية) يساوي:`, r.options, r.correct, "varc",
+        `انحراف الكفاءة = (${fmt(aq)} − ${fmt(sq)}) × ${sp} = ${A(ev)} ريال ${dir(ev)}.`);
+      r=rot([`${A(tv)} ريال ${dir(tv)}`,`${A(tv)} ريال ${dir(-tv)}`,`${A(pv-ev)} ريال ${dir(pv-ev)}`,`${fmt(ap*aq)} ريال ${dir(tv)}`],0,k+2);
+      add("u5", `${data}. الانحراف الإجمالي يساوي:`, r.options, r.correct, "varc",
+        `الإجمالي = انحراف السعر + انحراف الكفاءة = ${A(tv)} ريال ${dir(tv)} (= ${ap}×${fmt(aq)} − ${sp}×${fmt(sq)}).`);
+    };
+    V("المواد المباشرة","كجم","سعر الكيلوجرام",10,11,21000,20000,0);
+    V("الأجور المباشرة","ساعة","معدل أجر الساعة",8,7.5,9500,10000,1);
+  })();
+
+  return B;
+})();
+function gameBank(id){ return GAME_EXAM_BANK[id]||[]; }
+function examBank(id){ return (QUIZ_BANK[id]||[]).concat(EXAM_CFG.includeGames ? gameBank(id) : []); }
+
+/* ============================================================
    6) مولّد الاختبار
    ============================================================ */
 let EXAM_OPEN = false, EXAM = null;
@@ -4209,7 +4420,8 @@ let EXAM_CFG = {
   fontFamily: "Tajawal", fontSize: 14, qFontSize: 15,
   optionsLayout: "grid2",
   version: "unsolved",
-  formats: { pdf:true, word:false }
+  formats: { pdf:true, word:false },
+  includeGames: true
 };
 function openExam(){ EXAM_OPEN=true; render(); }
 function closeExam(){ EXAM_OPEN=false; render(); }
@@ -4276,14 +4488,15 @@ function examToggleManual(uid,i){
   if(EXAM_CFG.manual[uid][i]) delete EXAM_CFG.manual[uid][i]; else EXAM_CFG.manual[uid][i]=true;
   render();
 }
-function examAvailable(){ return EXAM_CFG.unitIds.reduce((a,id)=>a+((QUIZ_BANK[id]||[]).length),0); }
+function examAvailable(){ return EXAM_CFG.unitIds.reduce((a,id)=>a+examBank(id).length,0); }
+function examToggleGames(on){ EXAM_CFG.includeGames=!!on; EXAM_CFG.manual={}; render(); }
 function examManualCount(){ return Object.values(EXAM_CFG.manual).reduce((a,o)=>a+Object.keys(o).length,0); }
 
 function buildExam(){
   let pool=[];
   EXAM_CFG.unitIds.forEach(id=>{
     const u=UNITS.find(x=>x.id===id); if(!u) return;
-    (QUIZ_BANK[id]||[]).forEach((q,i)=>{
+    examBank(id).forEach((q,i)=>{
       if(EXAM_CFG.selectMethod==="manual" && !(EXAM_CFG.manual[id]&&EXAM_CFG.manual[id][i])) return;
       pool.push(Object.assign({},q,{unitTitle:u.title+": "+u.subtitle}));
     });
@@ -4408,12 +4621,12 @@ function renderExamModal(){
     <div class="field">
       <label>اختيار الأسئلة يدوياً <span class="badge">${examManualCount()} مختار</span></label>
       ${c.unitIds.map(id=>{
-        const u=UNITS.find(x=>x.id===id); const qs=QUIZ_BANK[id]||[];
+        const u=UNITS.find(x=>x.id===id); const qs=examBank(id);
         return `<div style="margin-bottom:10px"><div class="small" style="font-weight:800;color:var(--em-800);margin-bottom:4px">${esc(u.title)}: ${esc(u.subtitle)}</div>
           <div class="subchk">${qs.map((q,i)=>{
             const on=c.manual[id]&&c.manual[id][i];
             return `<label class="chk ${on?'on':''}"><input type="checkbox" ${on?'checked':''} onchange="examToggleManual('${id}',${i})">
-              <span>${i+1}. ${esc(q.q.slice(0,60))}${q.q.length>60?'…':''}</span></label>`;
+              <span>${q.src==="game"?"🎮 ":""}${i+1}. ${esc(q.q.slice(0,60))}${q.q.length>60?'…':''}</span></label>`;
           }).join("")}</div></div>`;
       }).join("")}
     </div>` : "";
@@ -4439,8 +4652,11 @@ function renderExamModal(){
           <div class="chklist">${UNITS.map(u=>{
             const on=c.unitIds.includes(u.id);
             return `<label class="chk ${on?'on':''}"><input type="checkbox" ${on?'checked':''} onchange="examToggleUnit('${u.id}')">
-              <span>${esc(u.title)} — ${esc(u.subtitle)} <span class="muted">(${(QUIZ_BANK[u.id]||[]).length})</span></span></label>`;
+              <span>${esc(u.title)} — ${esc(u.subtitle)} <span class="muted">(${(QUIZ_BANK[u.id]||[]).length}${c.includeGames?` + 🎮 ${gameBank(u.id).length}`:""})</span></span></label>`;
           }).join("")}</div>
+          <label class="chk ${c.includeGames?'on':''}" style="display:inline-flex;margin-top:8px">
+            <input type="checkbox" ${c.includeGames?'checked':''} onchange="examToggleGames(this.checked)">
+            <span>🎮 تضمين أسئلة ألعاب الوحدات (تصنيف، قيود، رسوم بيانية، مسائل حسابية)</span></label>
         </div>
         <div class="fgrid">
           <div class="field"><label>طريقة الاختيار</label>
